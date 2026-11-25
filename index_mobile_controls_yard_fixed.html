@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><meta name="theme-color" content="#08090d"><link rel="icon" type="image/png" sizes="512x512" href="./icon.png"><link rel="apple-touch-icon" href="./icon.png"><title>VEIL OF THE DEAD — Chapter I: The Doctor</title>
+<style>
+:root{--paper:#d9d5cb;--muted:#8b8991;--bg:#07080b}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--paper);font-family:Georgia,serif;touch-action:none}#game{position:fixed;inset:0}canvas{display:block;width:100%;height:100%}#overlay{position:fixed;inset:0;pointer-events:none}#titleScreen{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:24px;background:radial-gradient(ellipse at center,rgba(20,20,26,.3),rgba(2,3,5,.97));pointer-events:auto;transition:opacity .8s}.logo{letter-spacing:.19em;font-size:clamp(30px,8vw,58px);text-shadow:0 0 25px #000;margin:0 0 12px}.chapter{letter-spacing:.3em;color:#aaa;font-size:12px;margin-bottom:35px}.tagline{font-style:italic;color:#999;margin-bottom:28px;font-size:14px}button{font:inherit;color:var(--paper);background:rgba(40,15,18,.7);border:1px solid #67343a;padding:14px 25px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;pointer-events:auto}button:active{background:#77212a}.smallnote{color:#777;font:11px Arial;margin-top:18px;letter-spacing:.08em}#hud{display:none;position:absolute;inset:0}#titleScreen{overflow-y:auto}#titleScreen button{width:min(340px,88vw);min-height:46px;font-size:11px}
+#storyIntro{position:fixed;inset:0;z-index:300;display:none;align-items:center;justify-content:center;padding:30px 26px;background:#000;color:#d8d2c8;text-align:center;opacity:1;transition:opacity 1.5s}
+#storyIntroText{max-width:680px;font:clamp(17px,4.2vw,23px)/1.85 Georgia,serif;letter-spacing:.025em;text-shadow:0 0 18px rgba(190,180,160,.12);white-space:pre-wrap}
+#storyIntroText::after{content:' ';display:inline-block;width:1px;height:1em;margin-left:4px;vertical-align:-.12em;background:#c9c0b2;animation:introCaret .8s steps(1) infinite}
+@keyframes introCaret{50%{opacity:0}}#menuSaveInfo{max-width:320px;line-height:1.5}#backupNow{z-index:5;pointer-events:auto}.topline{position:absolute;top:14px;left:14px;right:14px;display:flex;justify-content:space-between;align-items:flex-start;font:11px Arial;letter-spacing:.1em;color:#c5c1ba;text-shadow:0 1px 5px #000}.sanity{width:120px;text-align:right}.sanityBar{height:4px;background:#29262a;margin-top:6px}.sanityFill{height:100%;width:100%;background:#a5a1a2;transition:width .4s}#hint{position:absolute;bottom:27%;left:50%;transform:translateX(-50%);font:12px Arial;letter-spacing:.1em;text-align:center;color:#ddd;text-shadow:0 2px 6px #000;white-space:nowrap;opacity:0;transition:opacity .2s}#joystick{position:absolute;left:24px;bottom:26px;width:112px;height:112px;border:1px solid #aaa5a544;border-radius:50%;background:#17171b66;pointer-events:auto;touch-action:none;user-select:none;-webkit-user-select:none}#stick{position:absolute;width:48px;height:48px;left:32px;top:32px;border-radius:50%;background:#aaa7a733;border:1px solid #aaa8a866}#interact{position:absolute;right:25px;bottom:40px;width:76px;height:76px;border-radius:50%;padding:0;font:10px Arial;letter-spacing:.06em;display:flex;align-items:center;justify-content:center;background:#171215aa;pointer-events:auto;touch-action:none}#flashlight{position:absolute;right:116px;bottom:54px;width:64px;height:64px;border-radius:50%;padding:0;font:9px Arial;letter-spacing:.04em;display:flex;align-items:center;justify-content:center;background:#171717aa;border-color:#777;pointer-events:auto;touch-action:none}#battery{position:absolute;right:20px;top:58px;width:92px;font:10px Arial;letter-spacing:.08em;text-align:right;color:#c9c3b7;text-shadow:0 1px 5px #000}#batteryBar{height:4px;background:#27272b;margin-top:5px}#batteryFill{height:100%;width:100%;background:#b4b1a3;transition:width .2s}#crosshair{position:absolute;left:50%;top:50%;width:5px;height:5px;border:1px solid #bcb8b0;border-radius:50%;transform:translate(-50%,-50%);opacity:.45}#message{position:absolute;left:50%;bottom:13%;transform:translateX(-50%);max-width:86%;width:max-content;text-align:center;font-size:15px;line-height:1.5;color:#d5d0c7;text-shadow:0 2px 8px #000;opacity:0;transition:opacity .35s}#fade{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .9s}#inventory{position:absolute;left:14px;top:58px;font:10px Arial;letter-spacing:.1em;color:#c9c3b7;text-shadow:0 1px 5px #000;pointer-events:none}#useBattery{position:absolute;right:20px;top:110px;padding:9px 12px;font:9px Arial;letter-spacing:.08em;display:none;background:#171717aa;border-color:#777}#mapLabel{position:absolute;top:50px;left:50%;transform:translateX(-50%);font:10px Arial;letter-spacing:.18em;color:#aaa;opacity:.75;text-shadow:0 2px 5px black}@media(min-width:800px){#joystick{left:40px}#interact{right:40px}}
+
+#saveStatus{position:absolute;left:14px;top:82px;font:9px Arial;letter-spacing:.1em;color:#aaa;opacity:.75;text-shadow:0 1px 4px #000}
+#saveSlotsPanel{display:none;position:fixed;inset:5% 4%;z-index:260;background:rgba(7,7,10,.98);border:1px solid #67534a;padding:18px;overflow:auto;pointer-events:auto;box-shadow:0 0 45px #000}
+#saveSlotsPanel h2{margin:0 0 8px;font-size:20px;letter-spacing:.14em}#saveSlotsHint{font:11px Arial;color:#aaa;margin-bottom:14px;line-height:1.5}
+#saveSlotsList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.saveSlot{border:1px solid #51464a;background:#141216;padding:11px;min-width:0}.saveSlot strong{display:block;font-size:13px;margin-bottom:5px}.saveSlot small{display:block;color:#aaa;font:10px/1.5 Arial;min-height:30px;overflow-wrap:anywhere}.saveSlotActions{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}.saveSlotActions button{padding:8px 9px;font:9px Arial;letter-spacing:.04em;flex:1 1 42%}.saveSlotActions button:disabled{opacity:.35}
+#saveSlotsClose{display:block;margin:14px 0 0 auto}
+#saveSlotsGame{position:absolute;right:14px;top:145px;padding:8px 10px;font:9px Arial;letter-spacing:.06em;background:#171215aa;border-color:#777;pointer-events:auto}
+#arrivalCaption{position:fixed;inset:0;z-index:290;display:none;align-items:flex-end;justify-content:center;padding:0 22px 13vh;background:linear-gradient(transparent 45%,rgba(0,0,0,.68));color:#eee;text-align:center;font:clamp(17px,4vw,24px)/1.5 Georgia,serif;text-shadow:0 2px 12px #000;pointer-events:none}
+#letterOverlay{position:fixed;inset:0;z-index:280;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.88);pointer-events:auto}
+#letterCard{width:min(620px,95vw);max-height:86vh;overflow:auto;background:#d7c8a7;color:#2c241d;padding:24px 22px;border:1px solid #9d8764;box-shadow:0 12px 55px #000;font:15px/1.75 Georgia,serif;white-space:pre-line}
+#letterCard h2{text-align:center;font-size:18px;letter-spacing:.12em;margin:0 0 16px;color:#463729}#letterCard button{display:block;margin:18px 0 0 auto;background:#33291f;border-color:#66533b;color:#eee2cf}
+@media(max-width:520px){#saveSlotsList{grid-template-columns:1fr}#saveSlotsPanel{inset:3% 3%;padding:13px}}#saveNow{position:absolute;left:14px;bottom:205px;padding:9px 12px;font:9px Arial;letter-spacing:.1em;background:#171717bb;border-color:#777;pointer-events:auto}
+#journalButton{position:absolute;left:14px;bottom:158px;padding:10px 13px;font:10px Arial;letter-spacing:.1em;background:#171717bb;border-color:#777;pointer-events:auto}
+#inventoryButton{position:absolute;left:14px;top:92px;padding:9px 12px;font:9px Arial;letter-spacing:.1em;background:#171717bb;border-color:#777;pointer-events:auto}
+#inventoryPanel{display:none;position:absolute;inset:9% 5%;background:rgba(8,8,11,.97);border:1px solid #65554a;padding:18px;pointer-events:auto;overflow:auto;max-height:82%;box-shadow:0 0 40px #000;z-index:5}
+#inventoryPanel h2{font-size:20px;letter-spacing:.16em;margin:0 0 6px}
+#inventorySub{font:10px Arial;letter-spacing:.12em;color:#9b9387;margin-bottom:14px}
+.inventoryGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.inventoryItem{border:1px solid #484047;background:#151318;padding:12px;min-height:74px}
+.inventoryItem strong{display:block;font-size:13px;color:#ddd4c8;margin-bottom:5px}
+.inventoryItem small{font:10px Arial;color:#918a83;line-height:1.4}
+.inventoryEmpty{color:#918a83;font:12px Arial;line-height:1.6;padding:14px;border:1px dashed #484047}
+#inventoryClose{margin-top:14px}\n#journalPanel{display:none;position:absolute;inset:7% 5%;background:rgba(8,8,11,.96);border:1px solid #65554a;padding:18px;pointer-events:auto;overflow:auto;max-height:86%;box-shadow:0 0 40px #000}
+#journalPanel h2{font-size:20px;letter-spacing:.16em;margin:0 0 6px}#journalSub{font:10px Arial;letter-spacing:.14em;color:#9b9387;margin-bottom:14px}
+#journalEntries{display:flex;flex-direction:column;gap:9px} .journalEntry{border:1px solid #39343a;padding:10px;background:#151419}.journalEntry strong{font-size:13px;display:block;margin-bottom:5px}.journalEntry p{font-size:12px;line-height:1.5;color:#b7b0a5;margin:0}.journalEntry.locked{opacity:.45}.journalEntry.found{border-color:#665448}.journalEmpty{color:#8c8580;font-size:12px;line-height:1.5;padding:12px;border:1px dashed #454047}
+#journalClose{display:block;margin:15px 0 0 auto;padding:10px 18px}
+#sprint{position:absolute;left:148px;bottom:48px;width:66px;height:52px;padding:0;font:9px Arial;letter-spacing:.05em;background:#171717aa;border-color:#777;touch-action:none}#stamina{position:absolute;left:148px;bottom:108px;width:66px;font:8px Arial;letter-spacing:.08em;color:#c9c3b7;text-align:center;text-shadow:0 1px 5px #000}#staminaBar{height:4px;background:#27272b;margin-top:5px}#staminaFill{height:100%;width:100%;background:#aaa99a;transition:width .12s}
+
+#doctorDialogue{display:none;position:absolute;inset:0;z-index:12;background:rgba(0,0,0,.9);align-items:center;justify-content:center;padding:18px;pointer-events:auto}#doctorCard{width:min(560px,94vw);max-height:86vh;overflow:auto;background:#100e11;border:1px solid #78504b;padding:22px;box-shadow:0 0 55px #000}#doctorCard h2{margin:0 0 14px;font-size:19px;letter-spacing:.16em;color:#d7c8b9}#doctorText{font-size:15px;line-height:1.6;color:#c8c0b8;margin:0 0 18px}#doctorChoices{display:flex;flex-direction:column;gap:9px}#doctorChoices button{width:100%;text-align:left;padding:12px;font-size:12px;line-height:1.4;letter-spacing:.04em;text-transform:none}#doctorChoices button:disabled{opacity:.35;cursor:not-allowed}#doctorCutscene{display:none;position:absolute;inset:0;z-index:11;background:rgba(0,0,0,.94);align-items:center;justify-content:center;text-align:center;padding:28px;pointer-events:none}#doctorCutsceneCard{max-width:540px}#doctorCutsceneTitle{font:11px Arial;letter-spacing:.3em;color:#a18d80;margin-bottom:22px}#doctorCutsceneText{font-size:clamp(18px,4.5vw,25px);line-height:1.65;font-style:italic;color:#ddd3c7}#doctorKnockout{display:none;position:absolute;inset:0;z-index:13;background:rgba(0,0,0,.95);align-items:center;justify-content:center;text-align:center;padding:24px;font-size:clamp(18px,4vw,24px);line-height:1.6;color:#d8d0c6;letter-spacing:.08em;pointer-events:none}
+#visionOverlay{display:none;position:absolute;inset:0;z-index:8;pointer-events:none;background:radial-gradient(ellipse at center,rgba(160,175,185,.12),rgba(0,0,0,.82));align-items:center;justify-content:center;text-align:center;padding:24px;opacity:0;transition:opacity .7s}
+#visionCard{max-width:560px;border:1px solid rgba(185,195,205,.25);background:rgba(8,10,13,.62);padding:22px 20px;box-shadow:0 0 38px #000;color:#d2d5d7}
+#visionLabel{font:10px Arial;letter-spacing:.28em;color:#9daab4;margin-bottom:18px}
+#visionText{font-size:clamp(17px,4vw,22px);line-height:1.65;font-style:italic;text-shadow:0 0 14px #b9c5cf55}
+#visionHint{font:10px Arial;letter-spacing:.15em;color:#8d959c;margin-top:22px}
+#visionOverlay.active{opacity:1}
+#stageToast{position:absolute;left:50%;top:18%;transform:translateX(-50%);max-width:88%;padding:13px 16px;background:rgba(8,8,11,.92);border:1px solid #78634d;color:#ddd6c9;font:12px Arial;letter-spacing:.08em;text-align:center;line-height:1.55;display:none;pointer-events:none;z-index:7}
+
+
+/* Mobile-first touch layout */
+html,body,#game,#overlay{overscroll-behavior:none;-webkit-user-select:none;user-select:none}
+canvas{touch-action:none}button{-webkit-tap-highlight-color:transparent;user-select:none}
+#hud{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+#joystick{left:max(14px,env(safe-area-inset-left));bottom:max(18px,env(safe-area-inset-bottom));width:116px;height:116px}
+#stick{left:33px;top:33px;width:48px;height:48px}
+#sprint{left:140px;bottom:max(42px,calc(env(safe-area-inset-bottom) + 24px));width:68px;height:58px;border-radius:16px}
+#stamina{left:140px;bottom:max(108px,calc(env(safe-area-inset-bottom) + 91px));width:68px}
+#interact{right:max(16px,env(safe-area-inset-right));bottom:max(22px,env(safe-area-inset-bottom));width:78px;height:78px;font-size:9px}
+#flashlight{right:max(104px,calc(env(safe-area-inset-right) + 88px));bottom:max(31px,calc(env(safe-area-inset-bottom) + 8px));width:66px;height:66px}
+#saveNow{left:14px;top:54px;bottom:auto;padding:8px 10px;font-size:9px}
+#inventoryButton{left:14px;top:91px;padding:8px 10px}
+#journalButton{left:14px;top:128px;bottom:auto;padding:8px 10px}
+#saveStatus{left:14px;top:166px;font-size:8px}
+#inventory{left:14px;top:184px;font-size:8px}
+#battery{right:14px;top:58px;width:84px;font-size:9px}
+#useBattery{right:14px;top:105px}
+#mapLabel{top:43px;max-width:38%;font-size:8px;letter-spacing:.1em;text-align:center}
+.topline{top:max(9px,env(safe-area-inset-top));left:14px;right:14px;font-size:9px}
+.sanity{width:94px}
+#hint{bottom:calc(max(150px,env(safe-area-inset-bottom) + 132px));max-width:72%;white-space:normal;font-size:10px;line-height:1.4}
+#message{bottom:calc(max(142px,env(safe-area-inset-bottom) + 124px));font-size:13px;max-width:84%}
+#crosshair{width:6px;height:6px}
+#inventoryPanel,#journalPanel{inset:max(5%,env(safe-area-inset-top)) 4% max(5%,env(safe-area-inset-bottom));max-height:90%;padding:16px}
+#inventoryPanel h2,#journalPanel h2{font-size:18px}
+#visionCard{padding:18px 16px}
+#stageToast{top:22%;font-size:10px;max-width:90%}
+@media(max-width:380px){#joystick{width:104px;height:104px}#stick{left:28px;top:28px}#sprint{left:124px;width:60px;height:54px}#stamina{left:124px;width:60px}#interact{width:70px;height:70px;right:12px}#flashlight{right:91px;width:60px;height:60px}#saveNow,#inventoryButton,#journalButton{font-size:8px;padding:7px 8px}}
+@media(max-height:620px){#joystick{width:94px;height:94px;bottom:max(10px,env(safe-area-inset-bottom))}#stick{left:23px;top:23px;width:46px;height:46px}#sprint{bottom:max(24px,calc(env(safe-area-inset-bottom) + 10px));height:48px}#stamina{bottom:max(78px,calc(env(safe-area-inset-bottom) + 65px))}#interact{width:64px;height:64px;bottom:max(12px,env(safe-area-inset-bottom))}#flashlight{width:56px;height:56px;bottom:max(16px,calc(env(safe-area-inset-bottom) + 2px))}#hint{bottom:112px}#message{bottom:104px}}
+@media(orientation:portrait) and (max-width:600px){#mapLabel{top:48px;max-width:34%}.topline{font-size:8px}}
+
+
+#ghostDialogue{position:fixed;inset:0;z-index:120;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(0,0,0,.82);backdrop-filter:blur(5px);touch-action:manipulation}
+#ghostDialogue .ghost-card{width:min(560px,94vw);max-height:82vh;overflow:auto;padding:24px 22px;border:1px solid rgba(190,180,160,.35);background:linear-gradient(145deg,rgba(27,25,27,.98),rgba(8,9,12,.98));box-shadow:0 18px 70px #000;border-radius:8px;color:#e8e0d3}
+#ghostDialogue h2{font-family:Georgia,serif;letter-spacing:.12em;font-size:clamp(17px,4vw,24px);color:#c9b89b;margin:0 0 16px}
+#ghostDialogue p{font-size:clamp(14px,3.4vw,17px);line-height:1.65;white-space:pre-line;color:#ded8cf;margin:0 0 22px}
+#ghostDialogue button{display:block;width:100%;min-height:48px;border:1px solid #8d7962;background:#302a27;color:#eee2d0;letter-spacing:.12em;font-weight:700;border-radius:5px}
+
+
+#scareOverlay{position:fixed;inset:0;z-index:140;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.94);color:#d8d0c6;text-align:center;padding:26px;pointer-events:none;opacity:0;transition:opacity .22s}
+#scareOverlay.active{display:flex;opacity:1}
+#scareOverlay .scareText{font-family:Georgia,serif;letter-spacing:.12em;font-size:clamp(17px,4vw,25px);line-height:1.6;text-shadow:0 2px 18px #000;max-width:620px}
+
+/* Revised mobile controls and visibility pass */
+#joystick{width:100px;height:100px;left:max(14px,env(safe-area-inset-left));bottom:calc(max(14px,env(safe-area-inset-bottom)) + 4px)}
+#stick{width:44px;height:44px;left:27px;top:27px}
+#sprint{left:24px;bottom:calc(max(14px,env(safe-area-inset-bottom)) + 112px);width:76px;height:42px;border-radius:12px;font-size:9px}
+#stamina{left:24px;bottom:calc(max(14px,env(safe-area-inset-bottom)) + 158px);width:76px}
+#interact{right:max(14px,env(safe-area-inset-right));bottom:calc(max(14px,env(safe-area-inset-bottom)) + 4px);width:68px;height:68px}
+#flashlight{right:max(22px,env(safe-area-inset-right));bottom:calc(max(14px,env(safe-area-inset-bottom)) + 84px);width:58px;height:58px}
+#hint{bottom:calc(max(14px,env(safe-area-inset-bottom)) + 166px);max-width:76%;white-space:normal}
+#message{bottom:calc(max(14px,env(safe-area-inset-bottom)) + 158px)}
+#saveNow,#inventoryButton,#journalButton{max-width:118px;padding:7px 9px;font-size:8px;letter-spacing:.03em}
+#saveNow{top:54px}#inventoryButton{top:88px}#journalButton{top:122px}
+#saveStatus{top:158px}#inventory{top:176px}
+#battery{top:66px;width:76px}
+@media(max-width:380px){#joystick{width:92px;height:92px}#stick{left:24px;top:24px;width:42px;height:42px}#sprint{left:18px;width:70px}#stamina{left:18px;width:70px}#interact{width:62px;height:62px}#flashlight{width:54px;height:54px;bottom:calc(max(14px,env(safe-area-inset-bottom)) + 78px)}}
+@media(max-height:620px){#joystick{width:84px;height:84px;bottom:max(8px,env(safe-area-inset-bottom))}#stick{left:21px;top:21px;width:40px;height:40px}#sprint{bottom:calc(max(8px,env(safe-area-inset-bottom)) + 92px);height:38px}#stamina{bottom:calc(max(8px,env(safe-area-inset-bottom)) + 134px)}#interact{width:58px;height:58px;bottom:max(8px,env(safe-area-inset-bottom))}#flashlight{width:50px;height:50px;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 68px)}#hint{bottom:145px}#message{bottom:138px}}
+</style><script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"}}</script></head><body><div id="game"></div><div id="overlay"><section id="titleScreen"><h1 class="logo">VEIL OF THE DEAD</h1><div class="chapter">CHAPTER I — THE DOCTOR</div><div class="tagline">Some doors should remain closed.</div><button id="start">НОВАЯ ИГРА</button><button id="mySaves" style="margin-top:10px">МОИ СОХРАНЕНИЯ · 0/6</button><button id="continueGame" style="display:none;margin-top:10px">ПРОДОЛЖИТЬ · ПОСЛЕДНЕЕ СОХРАНЕНИЕ</button><button id="newGame" style="display:none;margin-top:10px;background:#171215aa">НАЧАТЬ ЗАНОВО</button><button id="loadBackup" style="display:none;margin-top:10px;background:#171215aa">ЗАГРУЗИТЬ РЕЗЕРВНУЮ КОПИЮ</button><button id="exitGame" style="margin-top:10px;background:#09090baa;border-color:#555">ВЫХОД ИЗ ИГРЫ</button><div id="menuSaveInfo" class="smallnote">СОХРАНЕНИЯ ХРАНЯТСЯ В ЭТОМ БРАУЗЕРЕ</div><div class="smallnote">МОБИЛЬНЫЙ ХОРРОР · УПРАВЛЕНИЕ КАСАНИЯМИ</div></section><section id="storyIntro" aria-live="polite"><div id="storyIntroText"></div></section><div id="hud"><div class="topline"><div>CHAPTER I · THE DOCTOR</div><div class="sanity">SANITY <span id="sanityNum">100</span>%<div class="sanityBar"><div class="sanityFill" id="sanityFill"></div></div></div></div><div id="mapLabel">THE MANOR · ENTRY HALL</div><div id="saveStatus">NOT SAVED</div><button id="saveNow">SAVE</button><button id="backupNow" style="position:absolute;top:92px;right:14px;padding:9px 11px;font:9px Arial;letter-spacing:.06em;background:#171215aa;border-color:#8b7658">РЕЗЕРВ</button><button id="saveSlotsGame">СЛОТЫ · 6</button><div id="crosshair"></div><div id="hint">Tap INTERACT to examine</div><div id="joystick"><div id="stick"></div></div><div id="stamina">STAMINA<div id="staminaBar"><div id="staminaFill"></div></div></div><button id="sprint">SPRINT</button><button id="flashlight">LIGHT</button><button id="interact">INTERACT</button><div id="battery">BATTERY 100%<div id="batteryBar"><div id="batteryFill"></div></div></div><div id="inventory">BATTERY CELLS: <span id="cellCount">0</span></div><button id="inventoryButton">INVENTORY · 0</button><section id="inventoryPanel"><h2>INVENTORY</h2><div id="inventorySub">CARRIED ITEMS · CHAPTER I</div><div id="inventoryItems"></div><button id="inventoryClose">CLOSE</button></section><button id="useBattery">USE CELL</button><button id="journalButton">JOURNAL · 0/6</button><section id="journalPanel"><h2>INVESTIGATION JOURNAL</h2><div id="journalSub">CHAPTER I — THE DOCTOR · FOUND CLUES</div><div id="journalEntries"></div><button id="journalClose">CLOSE</button></section><div id="visionOverlay"><div id="visionCard"><div id="visionLabel">MEMORY FRAGMENT · VISION</div><div id="visionText"></div><div id="visionHint">THE VISION FADES</div></div></div><div id="message"></div><div id="stageToast"></div></div><div id="fade"></div></div>
+
+<div id="ghostDialogue" role="dialog" aria-modal="true">
+  <div class="ghost-card">
+    <h2 id="ghostDialogueTitle">ВОСПОМИНАНИЕ</h2>
+    <p id="ghostDialogueText"></p>
+    <button id="ghostDialogueClose" type="button">ПРОДОЛЖИТЬ</button>
+  </div>
+</div>
+<div id="doctorDialogue" role="dialog" aria-modal="true"><div id="doctorCard"><h2 id="doctorTitle">ДИАЛОГОВАЯ ДУЭЛЬ · ДОКТОР</h2><p id="doctorText"></p><div id="doctorChoices"></div></div></div>
+<div id="doctorCutscene"><div id="doctorCutsceneCard"><div id="doctorCutsceneTitle">ВОСПОМИНАНИЕ · ЗАХОРОНЕНИЕ ДОКТОРА</div><div id="doctorCutsceneText"></div></div></div>
+<div id="doctorKnockout">ВАС НАШЛИ…<br>СОЗНАНИЕ ПОКИДАЕТ ВАС</div><div id="scareOverlay"><div class="scareText" id="scareText"></div></div>
+<div id="saveSlotsPanel" role="dialog" aria-modal="true"><h2>МОИ СОХРАНЕНИЯ · 6 СЛОТОВ</h2><div id="saveSlotsHint">Каждый слот хранит отдельный прогресс. Выберите сохранение для загрузки или свободный слот для новой игры.</div><div id="saveSlotsList"></div><button id="saveSlotsClose" type="button">ЗАКРЫТЬ</button></div><div id="arrivalCaption"></div><div id="letterOverlay" role="dialog" aria-modal="true"><div id="letterCard"><h2>ПИСЬМО ВЛАДЕЛЬЦЕВ</h2><div id="letterText"></div><button id="letterClose" type="button">ЗАКРЫТЬ ЗАПИСКУ</button></div></div><div id="endingOverlay" style="display:none;position:fixed;inset:0;z-index:180;background:rgba(0,0,0,.96);color:#e5ded2;align-items:center;justify-content:center;text-align:center;padding:28px;pointer-events:auto"><div style="max-width:560px"><div id="endingKicker" style="font:10px Arial;letter-spacing:.3em;color:#a9957e;margin-bottom:22px">VEIL OF THE DEAD</div><div id="endingTitle" style="font:clamp(22px,5vw,32px) Georgia,serif;letter-spacing:.12em;margin-bottom:18px">КОНЕЦ</div><p id="endingText" style="font:16px/1.7 Georgia,serif;color:#c9c0b4;margin:0 0 26px"></p><button id="endingContinue" type="button">ПРОДОЛЖИТЬ</button></div></div>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js';
+const root=document.getElementById('game'), scene=new THREE.Scene();scene.background=new THREE.Color(0x101116);scene.fog=new THREE.FogExp2(0x17151a,.014);
+const camera=new THREE.PerspectiveCamera(72,innerWidth/innerHeight,.1,85);camera.position.set(0,1.65,3.8);
+const renderer=new THREE.WebGLRenderer({antialias:false,powerPreference:'low-power'});renderer.setPixelRatio(Math.min(devicePixelRatio,1.35));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=false;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.6;root.appendChild(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0xc4c5d2,0x665548,1.05));const ambient=new THREE.AmbientLight(0x766b78,.72);scene.add(ambient);
+const playerLamp=new THREE.PointLight(0xffd7b0,2.2,12,2);playerLamp.position.set(0,2.5,0);scene.add(playerLamp);
+// Camera-mounted flashlight with a battery mechanic.
+const flashlight=new THREE.SpotLight(0xffedcf,0,23,Math.PI/4.8,0.32,1.0);flashlight.position.set(0,-.08,0);camera.add(flashlight);const flashlightTarget=new THREE.Object3D();flashlightTarget.position.set(0,0,-1);camera.add(flashlightTarget);flashlight.target=flashlightTarget;scene.add(camera);let flashlightOn=false,battery=100;const flashlightButton=document.getElementById('flashlight');const batteryFill=document.getElementById('batteryFill');function toggleFlashlight(){if(battery<=0){say('Батарея фонарика разряжена.');return;}flashlightOn=!flashlightOn;flashlight.intensity=flashlightOn?12:0;flashlightButton.textContent=flashlightOn?'LIGHT ON':'LIGHT';flashlightButton.style.borderColor=flashlightOn?'#c6c2a5':'#777';flashlightButton.style.background=flashlightOn?'#343127aa':'#171717aa';}flashlightButton.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();if(started)toggleFlashlight();});
+const moon=new THREE.PointLight(0x283c68,.65,15);moon.position.set(-7,3,-12);scene.add(moon);
+// lightweight procedurally painted, seamless-ish canvas materials
+function canvasTex(type,base,seed){const c=document.createElement('canvas');c.width=c.height=256;const g=c.getContext('2d');g.fillStyle=base;g.fillRect(0,0,256,256);let s=seed;const rnd=()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296};if(type==='wall'){for(let i=0;i<1900;i++){const x=rnd()*256,y=rnd()*256,r=1+rnd()*4;g.fillStyle=`rgba(${rnd()>.5?255:0},${rnd()>.5?255:0},${rnd()>.5?255:0},${.025+rnd()*.06})`;g.beginPath();g.arc(x,y,r,0,Math.PI*2);g.fill()}for(let i=0;i<24;i++){const x=rnd()*256,y=rnd()*256;g.fillStyle=`rgba(35,24,17,${.07+rnd()*.13})`;g.beginPath();g.ellipse(x,y,6+rnd()*26,4+rnd()*17,rnd()*3,0,6.28);g.fill()}}else if(type==='floor'){for(let y=0;y<256;y+=38){g.fillStyle='rgba(5,3,2,.5)';g.fillRect(0,y,256,3);g.fillStyle='rgba(170,125,70,.14)';g.fillRect(0,y+4,256,1)}for(let i=0;i<750;i++){g.fillStyle=`rgba(${rnd()>.5?0:220},${rnd()>.5?0:170},${rnd()>.5?0:130},${.025+rnd()*.08})`;g.fillRect(rnd()*256,rnd()*256,3+rnd()*75,1+rnd()*3)}}else if(type==='metal'){for(let i=0;i<1200;i++){g.fillStyle=`rgba(${rnd()>.65?180:20},${rnd()>.65?65:10},${rnd()>.65?25:8},${.05+rnd()*.18})`;g.fillRect(rnd()*256,rnd()*256,1+rnd()*4,1+rnd()*9)}}const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.colorSpace=THREE.SRGBColorSpace;return t}
+const wallT=canvasTex('wall','#514b53',17),floorT=canvasTex('floor','#403329',22),woodT=canvasTex('floor','#493727',9),metalT=canvasTex('metal','#5a575d',4);wallT.repeat.set(2,1.5);floorT.repeat.set(6,6);woodT.repeat.set(2,2);metalT.repeat.set(2,2);
+const M=(color,texture=null,rough=1)=>new THREE.MeshStandardMaterial({color,roughness:rough,map:texture});const brass=M(0x554331);const wall=M(0xffffff,wallT),floor=M(0xffffff,floorT),wood=M(0xffffff,woodT),iron=M(0xffffff,metalT),dark=M(0x0d0d12),fabric=M(0x4b4140),paper=M(0xb6a887),red=M(0x5a1a20);
+function box(w,h,d,mat,x,y,z){const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);o.position.set(x,y,z);scene.add(o);return o}function floorRect(w,d,x,z,mat=floor){box(w,.12,d,mat,x,-.06,z)}
+// House plan: entry hall center, west basement room, east study, north hallway and attic ward.
+// Floor sections and wall pieces leave door-width gaps between zones.
+floorRect(12,10,0,0);floorRect(8,8,-10,0);floorRect(8,8,10,0);floorRect(7,11,0,-10);floorRect(8,7,0,-20);
+const H=3.5,th=.18;
+function wallSeg(x,z,w,d,y=H/2,mat=wall){box(w,H,d,mat,x,y,z)}
+// central entry hall perimeter with openings toward side rooms and north corridor
+wallSeg(-3.4,5,5.2,th);wallSeg(3.4,5,5.2,th);wallSeg(-6,-3.1,th,3.8);wallSeg(-6,3.1,th,3.8);wallSeg(6,-3.1,th,3.8);wallSeg(6,3.1,th,3.8);wallSeg(-3,-5,6,th);wallSeg(3,-5,6,th);
+// west room (basement access/lab entrance). South opening to hall, west closed walls.
+wallSeg(-10,5,8,th);wallSeg(-14,0,th,10);wallSeg(-10,-5,8,th);wallSeg(-6,-3.1,th,3.8);wallSeg(-6,3.1,th,3.8);
+// east room (study): opening at south-center toward hall
+wallSeg(10,5,8,th);wallSeg(14,0,th,10);wallSeg(10,-5,8,th);wallSeg(6,-3.1,th,3.8);wallSeg(6,3.1,th,3.8);
+// north corridor extends to ward / stair area; open south connection
+wallSeg(-3,-5,th,0.01);wallSeg(3,-5,th,0.01);wallSeg(-3.5,-10,th,10);wallSeg(3.5,-10,th,10);wallSeg(0,-15,7,th);
+// ward room at north with doorway gap centered on south wall
+wallSeg(-4,-20,th,7);wallSeg(4,-20,th,7);wallSeg(0,-23.5,8,th);wallSeg(-2,-16.5,4,th);wallSeg(2,-16.5,4,th);
+// trims, ceiling beams, doorway frames
+const trim=M(0x29242a),beam=M(0x211a17);for(const x of [-5.8,5.8,-13.8,13.8,-3.2,3.2])box(.12,.12,8,beam,x,3.28,0);for(const z of [-4.8,-10,-15.2,-20.2])box(11,.12,.12,beam,0,3.28,z);
+// Door frames and door slabs (some partially ajar); simple interactive-looking set dressing
+const doorRecords=[];
+function door(x,y,z,rot=0,label='Дверь'){
+  // Frame is fixed; the slab rotates around its left edge like a real hinged door.
+  const frameGroup=new THREE.Group();frameGroup.position.set(x,y,z);frameGroup.rotation.y=rot;scene.add(frameGroup);
+  const hinge=new THREE.Group();hinge.position.set(-.72,0,0);frameGroup.add(hinge);
+  const panel=box(1.42,2.72,.12,wood,.72,0,0);panel.position.x=.72;hinge.add(panel);
+  const knob=new THREE.Mesh(new THREE.SphereGeometry(.065,8,8),iron);knob.position.set(1.22,-.03,.11);hinge.add(knob);
+  const frameTop=box(1.62,.12,.2,beam,0,1.45,0);frameGroup.add(frameTop);
+  const frameLeft=box(.12,2.85,.2,beam,-.78,0,0);frameGroup.add(frameLeft);
+  const frameRight=box(.12,2.85,.2,beam,.78,0,0);frameGroup.add(frameRight);
+  doorRecords.push({group:frameGroup,hinge,panel,label,open:false,target:0,base:0});
+}
+door(-6,1.4,0,Math.PI/2,'Дверь в лабораторию');door(6,1.4,0,Math.PI/2,'Дверь в кабинет');door(0,1.4,-15.9,0,'Дверь в палату');door(0,1.4,5,0,'Входная дверь');
+// Exterior approach: a broad yard and a readable front facade, not a floating platform.
+const yardMat=new THREE.MeshStandardMaterial({color:0x34372f,roughness:1});
+const yard=new THREE.Mesh(new THREE.PlaneGeometry(140,140),yardMat);yard.rotation.x=-Math.PI/2;yard.position.set(0,-.19,-2);scene.add(yard);
+// Gravel path from the gate to the mansion entrance.
+floorRect(8,18,0,10, M(0x292724));
+for(const x of [-5.4,5.4]){box(.18,2.2,.18,beam,x,1.1,10);for(let z=7;z<15;z+=2.2)box(.12,1.55,.12,iron,x,0.78,z)}
+for(const x of [-.82,.82]){const post=new THREE.Mesh(new THREE.BoxGeometry(.12,2.4,.12),brass);post.position.set(x,1.2,5.02);scene.add(post)}
+box(1.8,.12,.16,beam,0,2.42,5.02);
+// Distinctive manor exterior: upper gable, pitched roof, windows and entrance porch.
+const facadeMat=new THREE.MeshStandardMaterial({color:0x51484a,roughness:1,side:THREE.DoubleSide});
+const gableGeo=new THREE.BufferGeometry();
+gableGeo.setAttribute('position',new THREE.Float32BufferAttribute([-14,3.48,4.86,14,3.48,4.86,0,6.65,4.86],3));
+gableGeo.setIndex([0,1,2]);gableGeo.computeVertexNormals();scene.add(new THREE.Mesh(gableGeo,facadeMat));
+const roofMat=new THREE.MeshStandardMaterial({color:0x242126,roughness:.96,side:THREE.DoubleSide});
+for(const side of [-1,1]){const roofPanel=new THREE.Mesh(new THREE.BoxGeometry(14.8,.32,30),roofMat);roofPanel.position.set(side*7.05,5.05,-9.7);roofPanel.rotation.z=side===-1?-.22:.22;scene.add(roofPanel);}
+// Front windows are visible from the approach and softly catch the exterior light.
+const windowFrame=M(0x292326),windowGlass=new THREE.MeshStandardMaterial({color:0x252d32,emissive:0x171d20,emissiveIntensity:.22,roughness:.35});
+for(const x of [-4.65,4.65]){box(1.35,1.65,.16,windowFrame,x,2.05,5.12);box(1.08,1.38,.08,windowGlass,x,2.05,5.22);box(1.12,.07,.1,brass,x,2.05,5.28);box(.07,1.42,.1,brass,x,2.05,5.28);}
+// Low porch steps make the entrance read as part of the building.
+box(3.2,.22,1.1,facadeMat,0,.11,5.65);box(2.5,.18,.75,facadeMat,0,.31,5.28);
+
+// Hall furniture and props
+box(2.5,.15,1.15,wood,-1.8,.72,1.2);for(const x of [-2.8,-.8])for(const z of [.75,1.65])box(.12,.72,.12,wood,x,.36,z);box(1.2,.12,.6,wood,3.8,1.2,2.6);box(.12,1.3,.6,wood,3.2,.65,2.6);box(.12,1.3,.6,wood,4.4,.65,2.6);
+// basement-like lab props in west room
+box(2.3,.16,1.05,iron,-10,.75,-1.5);box(2.05,.18,.92,fabric,-10,.88,-1.5);for(const x of [-10.85,-9.15])for(const z of [-1.9,-1.1])box(.1,.68,.1,iron,x,.35,z);box(1.6,.7,.35,iron,-12.4,1.4,-3);box(1.5,.08,.5,wood,-12.4,1.03,-3);for(let i=0;i<4;i++)box(.18,.36,.18,iron,-13.05+i*.42,.4,-3);
+// Study room east props
+box(2.2,.15,1,wood,10, .82,-1.8);for(const x of [9.1,10.9])box(.12,.8,.12,wood,x,.4,-2.2);box(2.5,.12,.5,wood,11.2,1.45,-3.5);box(.12,2.3,.5,wood,9.95,1.15,-3.5);box(.12,2.3,.5,wood,12.45,1.15,-3.5);
+// North passage / ward: bed-like silhouette and hanging lamp
+box(2.3,.15,1.2,iron,0,.55,-20.5);box(2.05,.18,1,fabric,0,.68,-20.5);box(.75,.15,.7,paper,-1.5,1.05,-18.2);box(.75,.15,.7,paper,1.5,1.05,-18.2);
+// Visible small clutter
+for(let i=0;i<45;i++){let x=(Math.random()*26-13),z=(Math.random()*25-12);if(Math.abs(x)<5&&z<-6)continue;let debris=box(.05+Math.random()*.18,.03,.08+Math.random()*.15,iron,x,.02,z);debris.rotation.y=Math.random()*3.14}
+// Clues as placeholders in their correct thematic zones; interaction messages are scaffold-only.
+const clueList=[];const clueMat=(c)=>new THREE.MeshStandardMaterial({color:c,roughness:1,emissive:c,emissiveIntensity:.04});function addClue(id,label,detail,x,y,z,color,shape='paper'){let mesh;if(shape==='strap'){mesh=new THREE.Mesh(new THREE.TorusGeometry(.1,.024,7,18),clueMat(color));mesh.rotation.x=Math.PI/2}else if(shape==='boot'){mesh=new THREE.Mesh(new THREE.BoxGeometry(.28,.12,.13),clueMat(color))}else if(shape==='journal'){mesh=new THREE.Mesh(new THREE.BoxGeometry(.18,.13,.22),clueMat(color))}else mesh=new THREE.Mesh(new THREE.BoxGeometry(.22,.015,.17),clueMat(color));mesh.position.set(x,y,z);scene.add(mesh);clueList.push({id,label,detail,mesh,found:false,unlocked:!['_drawing','_letter','_page'].some(suffix=>id.endsWith(suffix))})}
+addClue('tomas_boot','Томас — ботинок','В лаборатории найден маленький ботинок. Вспышка видения: Томас. Его могила отмечена за замурованной стеной.',-11.2,.95,-1.4,0x65513e,'boot');addClue('tomas_drawing','Томас — рисунок','Детский рисунок. На обороте имя Адриана.',-9.2,.95,-2.4,0x9a8869);addClue('maria_strap','Мария — ремень','Ремень от кушетки. Появляется видение Марии; могила под койкой.',-10,.99,-1.5,0x714a40,'strap');addClue('maria_letter','Мария — письмо','Письмо домой. Текст об обещании доктора.',10.1,1.05,-1.8,0xb5a279);addClue('joseph_journal','Йозеф — дневник','Дневник Йозефа спрятан за кирпичом в подвале.',-12.7,1.5,-3.2,0x594638,'journal');addClue('joseph_page','Йозеф — страница','Вырванная страница из записей доктора, в кабинете.',11.2,.9,-2.1,0x908777);
+// Collectible battery cells: simple low-poly mesh, stored in inventory and used to recharge flashlight.
+const pickupMat=new THREE.MeshStandardMaterial({color:0x9a9d8a,metalness:.35,roughness:.55,emissive:0x252a1c,emissiveIntensity:.2});const pickupCapMat=new THREE.MeshStandardMaterial({color:0x77604a,metalness:.5,roughness:.65});const pickupRecords=[];function addBatteryPickup(x,y,z){const g=new THREE.Group();const body=new THREE.Mesh(new THREE.CylinderGeometry(.11,.11,.28,8),pickupMat);body.rotation.z=Math.PI/2;g.add(body);const cap=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,.045,8),pickupCapMat);cap.rotation.z=Math.PI/2;cap.position.x=.16;g.add(cap);g.position.set(x,y,z);scene.add(g);pickupRecords.push({group:g,found:false});}
+addBatteryPickup(4.65,.22,3.8);addBatteryPickup(10.6,.25,-3.1);addBatteryPickup(-12.3,.22,2.5);
+// Chapter progression: three burial sites become examinable after all six clues are found.
+const burialRecords=[];let completedBurials=[];let doctorRevealed=false;
+function addBurial(id,label,detail,x,z){const g=new THREE.Group();const stone=new THREE.Mesh(new THREE.BoxGeometry(.82,.52,.18),M(0x4b4948));stone.position.y=.26;stone.rotation.z=-.08;g.add(stone);const plaque=new THREE.Mesh(new THREE.BoxGeometry(.48,.22,.035),M(0x777064));plaque.position.set(0,.3,.11);g.add(plaque);const mark=new THREE.Mesh(new THREE.BoxGeometry(.045,.14,.025),M(0x29272a));mark.position.set(0,.3,.135);g.add(mark);g.position.set(x,0,z);scene.add(g);burialRecords.push({id,label,detail,group:g,mesh:stone,done:false,victim:id.split('_')[0]});}
+addBurial('tomas_grave','Захоронение Томаса','За старой кладкой обнаружено маленькое захоронение. Детский рисунок и ботинок теперь складываются в одну историю. На камне выцарапано: «Он обещал вернуть меня домой».',-12.7,-4.05);
+addBurial('maria_grave','Захоронение Марии','Под ржавой койкой найдено место захоронения Марии. Рядом лежит обрывок письма: доктор называл свои эксперименты лечением.',-10.0,-4.05);
+addBurial('joseph_grave','Захоронение Йозефа','За кирпичной кладкой спрятаны останки и последняя запись Йозефа. В ней сказано, что доктор Адриан Моргенштерн всё ещё находится в доме.',-7.3,-4.05);
+// Added interior detail pass: stair silhouette, wall frames, furniture, lamps and clutter. Kept low-poly for mobile.
+const plasterDark=M(0x211c20), glass=M(0x2b3238), portrait=M(0x171419), mattress=M(0x393237);
+// staircase in the north corridor, ascending toward the manor's upper floor
+for(let i=0;i<8;i++){const step=box(2.25,.22,.48,wood,-1.25,0.12+i*.22,-8.1-i*.48);step.position.y=.12+i*.22;}
+box(2.35,.13,.42,beam,-1.25,1.9,-10.0); // upper landing lip
+for(let i=0;i<8;i++){box(.12,.32,.12,wood,-2.48,.45+i*.22,-8.0-i*.48);box(.12,.32,.12,wood,-.02,.45+i*.22,-8.0-i*.48)}
+// Chandelier above entry hall: dark metal arms and weak warm bulbs
+box(.18,.42,.18,brass,0,2.95,0);for(let i=0;i<4;i++){let a=i*Math.PI/2;const arm=box(.8,.07,.07,brass,Math.cos(a)*.52,2.78,Math.sin(a)*.52);arm.rotation.y=a;const bulb=new THREE.Mesh(new THREE.SphereGeometry(.12,8,6),new THREE.MeshStandardMaterial({color:0x8b6840,emissive:0x8b4c22,emissiveIntensity:.25}));bulb.position.set(Math.cos(a)*.9,2.62,Math.sin(a)*.9);scene.add(bulb)}
+// framed portraits and faded wall pictures (simple layered geometry)
+function portraitFrame(x,y,z,rot=0){const frame=box(.72,.96,.09,brass,x,y,z);frame.rotation.y=rot;const art=box(.56,.78,.04,portrait,x,y,z+(rot===0?.06:0));art.rotation.y=rot;const silhouette=box(.24,.3,.04,plasterDark,x,y+.08,z+(rot===0?.09:0));silhouette.rotation.y=rot;}
+portraitFrame(-3.8,2.05,4.88);portraitFrame(3.7,2.05,4.88);portraitFrame(-13.88,2.05,-1.5,Math.PI/2);portraitFrame(13.88,2.05,-1.5,-Math.PI/2);
+// Entry hall: old umbrella stand, runner rug, side cabinet and dusty books
+box(1.25,.08,5.5,fabric,0,.015,0);box(.75,.72,.75,wood,4.7,.38,4.05);box(.85,.08,.82,beam,4.7,.78,4.05);for(let i=0;i<5;i++){box(.48,.045,.12,paper,4.45,.88+i*.055,3.85)}
+// Owners' letter placed visibly on the entry-hall cabinet.
+const ownersNote=new THREE.Mesh(new THREE.BoxGeometry(.42,.018,.3),new THREE.MeshStandardMaterial({color:0xd2c39f,roughness:1}));
+ownersNote.position.set(4.7,.835,4.05);ownersNote.rotation.x=-.05;scene.add(ownersNote);
+let ownersNoteRead=false;for(const c of clueList)c.mesh.visible=false;
+const letterOverlay=document.getElementById('letterOverlay');
+const ownersLetter=`Здравствуйте, Алекс Морган!\n\nБлагодарим вас за то, что согласились приехать.\n\nМного лет назад в этом особняке произошла серия жестоких убийств. С тех пор здесь творятся необъяснимые вещи. По ночам слышны голоса, в коридорах появляются силуэты, а некоторые предметы перемещаются сами по себе.\n\nМы боимся, что души погибших так и не обрели покоя. Мы больше не можем оставаться в этом доме и просим вас разобраться в произошедшем и освободить особняк от призраков. Возможно, ответы скрыты в комнатах и вещах тех, кто когда-то здесь жил.\n\nПростите, что не смогли встретить вас лично. Мы надеемся, что вы сможете завершить это расследование.\n\nС уважением, владельцы особняка.`;
+document.getElementById('letterText').textContent=ownersLetter;
+function focusOwnersNote(){if(ownersNoteRead)return null;ray.setFromCamera(center,camera);const hits=ray.intersectObject(ownersNote,false);return hits.length&&hits[0].distance<2.8?ownersNote:null}
+document.getElementById('letterClose').addEventListener('click',()=>{letterOverlay.style.display='none';refreshClueUnlocks();say('Убийства… Значит, нужно начать с поиска улик. Возможно, именно они помогут понять, что здесь произошло.');const toast=document.getElementById('stageToast');toast.textContent='НОВАЯ ЦЕЛЬ · НАЙДИТЕ ПЕРВЫЕ УЛИКИ В ОСОБНЯКЕ';toast.style.display='block';saveGame(false)});
+
+// Lab: cabinet doors, trays and glass vessels
+box(1.25,1.7,.38,wood,-13.25,.85,2.1);for(let y=.32;y<1.55;y+=.4)box(1.28,.05,.4,brass,-13.25,y,2.1);for(let i=0;i<3;i++){const jar=new THREE.Mesh(new THREE.CylinderGeometry(.08,.09,.28,8),glass);jar.position.set(-13.55+i*.3,1.75,2.1);scene.add(jar);box(.08,.05,.08,brass,-13.55+i*.3,1.92,2.1)}
+// Study: bookshelf with books, chair, and writing desk details
+box(2.1,2.15,.42,wood,13.15,1.1,-.6);for(let y=.35;y<2;y+=.48)box(2.12,.06,.45,beam,13.15,y,-.6);for(let shelf=0;shelf<4;shelf++){for(let b=0;b<6;b++){const book=box(.12,.24+((b+shelf)%3)*.05,.22,[red,wood,plasterDark,brass][(b+shelf)%4],12.3+b*.29,.48+shelf*.48,-.57);book.rotation.z=(b%2)*.06}}
+box(.75,.12,.75,wood,8.8,.65,-.7);box(.7,.7,.12,wood,8.8,.3,-.98);box(.72,.12,.72,wood,8.8,1.02,-.7);
+// Ward: bedside table, folded blanket, pillow and rusty bed frame accents
+box(.55,.6,.55,wood,2.35,.3,-21.6);box(.6,.06,.6,beam,2.35,.62,-21.6);box(.42,.16,.4,paper,2.35,.72,-21.6);box(.6,.05,.08,iron,0,.8,-21.15);box(.6,.05,.08,iron,0,.8,-19.85);
+// Curtains around windows; darkened cloth panels and rods
+function curtains(x,z,width){box(width+.15,.08,.1,brass,x,2.65,z);box(width*.38,1.7,.12,fabric,x-width*.28,1.8,z);box(width*.38,1.7,.12,fabric,x+width*.28,1.8,z);}
+curtains(-4.6,4.86,1.8);curtains(4.6,4.86,1.8);curtains(-13.86,-3.9,1.8);curtains(13.86,-3.9,1.8);
+// scattered broken boards and paper scraps for visual richness
+for(let i=0;i<18;i++){const x=(Math.random()*8-4),z=(Math.random()*8-4);if(Math.abs(x)<1.1&&Math.abs(z)<1.1)continue;const plank=box(.12+Math.random()*.35,.025,.8+Math.random()*.45,wood,x,.025,z);plank.rotation.y=Math.random()*Math.PI;}
+
+// First haunting event: a translucent apparition appears in the corridor when the player enters it.
+const apparitionMat=new THREE.MeshStandardMaterial({color:0x9ba5b5,transparent:true,opacity:.22,roughness:1,emissive:0x27313c,emissiveIntensity:.22});
+const apparition=new THREE.Group();const ghostBody=new THREE.Mesh(new THREE.CapsuleGeometry(.32,.9,4,8),apparitionMat);ghostBody.position.y=1.05;apparition.add(ghostBody);const ghostHead=new THREE.Mesh(new THREE.SphereGeometry(.27,10,8),apparitionMat);ghostHead.position.y=1.82;apparition.add(ghostHead);apparition.position.set(0,0,-11.5);apparition.visible=false;scene.add(apparition);const ghostModelTargets=[apparition];let hauntingTriggered=false,hauntingTime=0;
+// Doctor hunter: a lightweight low-poly silhouette, awakened by the first clue.
+const doctor=new THREE.Group();
+const doctorCoat=new THREE.Mesh(new THREE.CylinderGeometry(.27,.43,1.25,7),new THREE.MeshStandardMaterial({color:0x171519,roughness:1}));doctorCoat.position.y=.82;doctor.add(doctorCoat);
+const doctorHead=new THREE.Mesh(new THREE.SphereGeometry(.23,8,7),new THREE.MeshStandardMaterial({color:0x77716b,roughness:1}));doctorHead.position.y=1.62;doctor.add(doctorHead);
+const doctorFace=new THREE.Mesh(new THREE.BoxGeometry(.23,.07,.035),new THREE.MeshBasicMaterial({color:0x09090b}));doctorFace.position.set(0,1.62,.205);doctor.add(doctorFace);
+const doctorArmMat=new THREE.MeshStandardMaterial({color:0x242126,roughness:1});
+for(const side of [-1,1]){const arm=new THREE.Mesh(new THREE.CylinderGeometry(.075,.09,.82,6),doctorArmMat);arm.position.set(side*.34,.9,0);arm.rotation.z=side*.12;doctor.add(arm)}
+doctor.visible=false;scene.add(doctor);
+// Character and scare assets use the exact filenames from horror_models_package.
+const characterLoader=new GLTFLoader();let genericGhostTemplate=null;const victimModelTemplates={};
+const scareModelTemplates={};
+function fitCharacterModel(object,targetHeight=1.9,ghost=false){
+ const bounds=new THREE.Box3().setFromObject(object),size=bounds.getSize(new THREE.Vector3()),center=bounds.getCenter(new THREE.Vector3());
+ const maxDim=Math.max(size.x,size.y,size.z)||1;const scale=targetHeight/Math.max(size.y,maxDim*.55);
+ object.scale.setScalar(scale);object.position.set(-center.x*scale,-bounds.min.y*scale,-center.z*scale);
+ object.traverse(n=>{if(n.isMesh){n.castShadow=false;n.receiveShadow=false;if(n.material){n.material=n.material.clone();n.material.side=THREE.DoubleSide;if(ghost){n.material.transparent=true;n.material.opacity=.58;n.material.depthWrite=false}}}});
+}
+function applyModelToGroup(target,source,height=1.9,ghost=false){
+ if(!target||!source)return;const model=source.clone(true);fitCharacterModel(model,height,ghost);target.clear();target.add(model);
+}
+function loadNamedModel(file,key,targets,height=1.9,ghost=false){
+ characterLoader.load('./models/'+file,gltf=>{
+  const source=gltf.scene;
+  if(key==='genericGhost')genericGhostTemplate=source;
+  if(key.startsWith('victim:'))victimModelTemplates[key.slice(7)]=source;
+  if(key.startsWith('scare:'))scareModelTemplates[key.slice(6)]=source;
+  for(const target of targets)applyModelToGroup(target,source,height,ghost);
+ },undefined,()=>{/* Missing model: retain the existing procedural fallback. */});
+}
+loadNamedModel('doctor_adrian.glb','doctor',[doctor],1.9,false);
+loadNamedModel('ghost_thomas.glb','genericGhost',ghostModelTargets,1.9,true);
+loadNamedModel('ghost_thomas.glb','victim:thomas',[],1.9,true);
+loadNamedModel('ghost_maria.glb','victim:maria',[],1.9,true);
+loadNamedModel('ghost_joseph.glb','victim:joseph',[],1.9,true);
+function setVictimModel(victim){
+ const source=victimModelTemplates[victim]||genericGhostTemplate;if(!source)return;
+ applyModelToGroup(apparition,source,1.9,true);
+}
+const doctorGrave=new THREE.Group();const graveStone=new THREE.Mesh(new THREE.BoxGeometry(1.15,.68,.22),new THREE.MeshStandardMaterial({color:0x494447,roughness:1}));graveStone.position.y=.34;doctorGrave.add(graveStone);const graveCrossV=new THREE.Mesh(new THREE.BoxGeometry(.09,.55,.07),new THREE.MeshStandardMaterial({color:0x77706a}));graveCrossV.position.set(0,.9,0);doctorGrave.add(graveCrossV);const graveCrossH=new THREE.Mesh(new THREE.BoxGeometry(.38,.08,.08),graveCrossV.material);graveCrossH.position.set(0,.98,0);doctorGrave.add(graveCrossH);doctorGrave.position.set(0,0,-2.65);doctorGrave.visible=false;scene.add(doctorGrave);
+let doctorAwake=false,doctorBurialStarted=false,doctorBuried=false,doctorDefeated=false,doctorBusy=false,doctorCooldownUntil=0,doctorHome=new THREE.Vector3();
+
+
+// Interactions: pick nearest item in front of crosshair, raycast. Clues staged; not yet full story sequence.
+const ray=new THREE.Raycaster(),center=new THREE.Vector2(0,0);let focused=null;
+const firstClueByVictim={tomas:'tomas_boot',maria:'maria_strap',joseph:'joseph_journal'};
+const secondClueByVictim={tomas:'tomas_drawing',maria:'maria_letter',joseph:'joseph_page'};
+const victimNames={tomas:'ТОМАС',maria:'МАРИЯ',joseph:'ЙОЗЕФ'};
+const partialTalksDone=[];
+const fullTalksDone=[];
+let activeGhostVictim=null,activeGhostStage=null;
+const ghostDialogue=document.getElementById('ghostDialogue');
+const ghostDialogueTitle=document.getElementById('ghostDialogueTitle');
+const ghostDialogueText=document.getElementById('ghostDialogueText');
+const ghostDialogueClose=document.getElementById('ghostDialogueClose');
+const victimDialogue={
+ tomas:{
+  partial:'Не подходи… Я думал, что доктор поможет мне вернуться домой. Но он всё время лгал. Рисунок… там я оставил имя… Он идёт… Мне пора бежать!',
+  full:'Меня зовут Томас. Доктор говорил, что знает, как помочь мне, и обещал отправить домой. Я поверил ему. Потом понял, что он скрывает то, что происходит в доме. Я нарисовал всё, что помнил, и написал на обороте имя Адриана. Ботинок остался здесь, когда меня увели. Пожалуйста, не дай ему снова назвать это лечением. Я хотел, чтобы кто-нибудь узнал правду.'
+ },
+ maria:{
+  partial:'Он обещал, что лечение закончится и я смогу уйти. Я оставила письмо… Там правда. Но он возвращается… Он идёт… Мне пора бежать!',
+  full:'Я Мария. Адриан называл свои опыты лечением и убеждал меня потерпеть ещё немного. Я просила отпустить меня домой. Я написала письмо, но так и не смогла его отправить. Ремень на кушетке напоминает мне о том, что здесь происходило. Я надеялась, что письмо однажды попадёт к кому-нибудь, кто сможет остановить его. Не верь обещаниям Адриана. Он никогда не собирался отпускать нас.'
+ },
+ joseph:{
+  partial:'Я записал то, что узнал о докторе. Дневник… и страница с его почерком. Я спрятал правду. Он идёт… Мне пора бежать!',
+  full:'Я Йозеф. Я работал здесь и первым понял, что Адриан скрывает результаты своих опытов. Я записывал всё в дневник, а самые важные строки сохранил отдельно. Он понял, что я знаю слишком много. Если ты нашёл дневник и вырванную страницу, значит, ты уже видел его почерк и знаешь, что я говорил правду. Не позволяй ему уничтожить последние свидетельства.'
+ }
+};
+function refreshClueUnlocks(){
+ for(const c of clueList){
+  const victim=c.id.split('_')[0];
+  c.unlocked=firstClueByVictim[victim]===c.id || partialTalksDone.includes(victim);
+  c.mesh.visible=!c.found&&c.unlocked&&ownersNoteRead;
+ }
+}
+function showVictimGhost(victim,stage){
+ const grave=burialRecords.find(b=>b.victim===victim);if(!grave)return;
+ activeGhostVictim=victim;activeGhostStage=stage;
+ apparition.position.set(grave.group.position.x,0,grave.group.position.z-1.15);
+ apparition.lookAt(grave.group.position.x,0,grave.group.position.z+2);
+ apparition.visible=true;apparitionMat.opacity=.62;
+ say('У захоронения появляется призрак '+victimNames[victim]+'. Только здесь можно поговорить с ним.');
+}
+function pendingGhost(){
+ return Object.keys(firstClueByVictim).find(v=>clueList.some(c=>c.id===firstClueByVictim[v]&&c.found)&&!partialTalksDone.includes(v))
+ ||Object.keys(secondClueByVictim).find(v=>clueList.some(c=>c.id===secondClueByVictim[v]&&c.found)&&!fullTalksDone.includes(v));
+}
+function updateGhostAtBurial(){
+ if(activeGhostVictim||ghostDialogue.style.display==='flex')return;
+ const victim=pendingGhost();if(!victim)return;
+ const grave=burialRecords.find(b=>b.victim===victim);if(!grave)return;
+ const dx=camera.position.x-grave.group.position.x,dz=camera.position.z-grave.group.position.z;
+ if(dx*dx+dz*dz>4.4*4.4)return;
+ const stage=partialTalksDone.includes(victim)?'full':'partial';showVictimGhost(victim,stage);
+}
+function closeVictimDialogue(){
+ ghostDialogue.style.display='none';
+ apparition.visible=false;apparitionMat.opacity=.22;
+ const victim=ghostDialogue.dataset.victim,stage=ghostDialogue.dataset.stage;
+ if(stage==='partial'&&!partialTalksDone.includes(victim)){
+  partialTalksDone.push(victim);refreshClueUnlocks();renderInventory();renderJournal();
+  say('Призрак исчез. Теперь можно искать вторую улику: '+victimNames[victim]+'.');
+ }else if(stage==='full'&&!fullTalksDone.includes(victim)){
+  fullTalksDone.push(victim);say('История '+victimNames[victim]+' раскрыта полностью.');
+ }
+ activeGhostVictim=null;activeGhostStage=null;
+ updateChapterStage();saveGame(false);
+ // Другие призраки появятся только тогда, когда игрок подойдёт к их захоронениям.
+}
+ghostDialogueClose.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();closeVictimDialogue()});
+function openVictimDialogue(victim,stage){
+ ghostDialogue.dataset.victim=victim;ghostDialogue.dataset.stage=stage;
+ ghostDialogueTitle.textContent=stage==='partial'?'НЕЗАКОНЧЕННЫЙ РАССКАЗ · '+victimNames[victim]:'ПОСЛЕДНЕЕ ВОСПОМИНАНИЕ · '+victimNames[victim];
+ ghostDialogueText.textContent=victimDialogue[victim][stage];
+ ghostDialogueClose.textContent=stage==='partial'?'ПРОДОЛЖИТЬ РАССЛЕДОВАНИЕ':'ЗАКРЫТЬ ВОСПОМИНАНИЕ';
+ ghostDialogue.style.display='flex';
+}
+function focusGhost(){
+ if(!activeGhostVictim||!apparition.visible)return null;
+ const grave=burialRecords.find(b=>b.victim===activeGhostVictim);if(!grave)return null;
+ const dx=camera.position.x-grave.group.position.x,dz=camera.position.z-grave.group.position.z;
+ if(dx*dx+dz*dz>4.6*4.6)return null;
+ ray.setFromCamera(center,camera);const hits=ray.intersectObjects(apparition.children,true);
+ return hits.length&&hits[0].distance<3.6?activeGhostVictim:null;
+}
+function focusClue(){
+ if(!ownersNoteRead)return null;
+ ray.setFromCamera(center,camera);
+ const hits=ray.intersectObjects(clueList.filter(c=>!c.found&&c.unlocked).map(c=>c.mesh),false);
+ if(hits.length&&hits[0].distance<2.7)return clueList.find(c=>c.mesh===hits[0].object);
+ return null;
+}
+function focusBurial(){
+ ray.setFromCamera(center,camera);
+ const available=burialRecords.filter(b=>!b.done&&clueList.some(c=>c.id===firstClueByVictim[b.victim]&&c.found));
+ const hits=ray.intersectObjects(available.map(b=>b.mesh),false);
+ if(hits.length&&hits[0].distance<3.1)return available.find(b=>b.mesh===hits[0].object);
+ return null;
+}
+function updateChapterStage(){
+ const done=burialRecords.filter(b=>b.done).length;
+ let available=0;
+ for(const b of burialRecords){
+  const unlocked=clueList.some(c=>c.id===firstClueByVictim[b.victim]&&c.found);
+  b.group.visible=unlocked&&!b.done;
+  if(unlocked&&!b.done)available++;
+ }
+ const toast=document.getElementById('stageToast');
+ if(done===3&&!doctorRevealed){
+  doctorRevealed=true;toast.textContent='ГОЛОС ИЗ КАБИНЕТА: «Вы не должны были найти их…»';toast.style.display='block';
+  apparition.position.set(10,0,-3.8);apparition.visible=true;apparitionMat.opacity=.42;hauntingTime=performance.now();
+  sanity=Math.max(0,sanity-12);document.getElementById('sanityNum').textContent=Math.ceil(sanity);document.getElementById('sanityFill').style.width=sanity+'%';
+  say('АДРИАН МОРГЕНШТЕРН: «Теперь вы знаете слишком много».');
+ }else if(done===3){
+  toast.textContent='ГЛАВА I · ВСЕ ТРИ ЗАХОРОНЕНИЯ НАЙДЕНЫ. ДОКТОР ЗНАЕТ, ЧТО ВЫ ЗДЕСЬ.';toast.style.display='block';
+ }else if(available>0){
+  toast.textContent='НАЙДИТЕ ОТКРЫТЫЕ ЗАХОРОНЕНИЯ · '+done+'/3';toast.style.display='block';
+ }else{
+  toast.style.display='none';
+ }
+}
+refreshClueUnlocks();
+function focusBattery(){ray.setFromCamera(center,camera);const hits=ray.intersectObjects(pickupRecords.filter(p=>!p.found).flatMap(p=>p.group.children),false);if(hits.length&&hits[0].distance<2.7)return pickupRecords.find(p=>p.group.children.includes(hits[0].object));return null}
+// Touch controls
+let move={x:0,y:0},joyOn=false,joyPointer=null,lookPointer=null,lastX=0,lastY=0,yaw=0,pitch=0;let sprintHeld=false,stamina=100;const sprintButton=document.getElementById('sprint'),staminaFill=document.getElementById('staminaFill');function setSprint(value){sprintHeld=!!value&&started&&stamina>3;sprintButton.style.borderColor=sprintHeld?'#c6c2a5':'#777';sprintButton.style.background=sprintHeld?'#343127aa':'#171717aa'}sprintButton.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();setSprint(true);sprintButton.setPointerCapture(e.pointerId)});sprintButton.addEventListener('pointerup',()=>setSprint(false));sprintButton.addEventListener('pointercancel',()=>setSprint(false));sprintButton.addEventListener('lostpointercapture',()=>setSprint(false));const joy=document.getElementById('joystick'),stick=document.getElementById('stick');joy.addEventListener('pointerdown',e=>{e.preventDefault();joyOn=true;joyPointer=e.pointerId;joy.setPointerCapture(e.pointerId);setStick(e)});joy.addEventListener('pointermove',e=>{if(joyOn&&e.pointerId===joyPointer)setStick(e)});function setStick(e){const r=joy.getBoundingClientRect(),dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2),max=35,l=Math.hypot(dx,dy);let sx=dx,sy=dy;if(l>max){sx=dx/l*max;sy=dy/l*max}stick.style.left=(32+sx)+'px';stick.style.top=(32+sy)+'px';move.x=sx/max;move.y=sy/max}function release(){joyOn=false;move={x:0,y:0};stick.style.left='32px';stick.style.top='32px'}joy.addEventListener('pointerup',release);joy.addEventListener('pointercancel',release);joy.addEventListener('lostpointercapture',release);
+renderer.domElement.addEventListener('pointerdown',e=>{if(visionActive||journalPanel.style.display==='block'||inventoryPanel.style.display==='block'||e.target.closest?.('#joystick,#interact,#journalButton,#journalPanel,#inventoryButton,#inventoryPanel,#sprint'))return;lookPointer=e.pointerId;lastX=e.clientX;lastY=e.clientY;renderer.domElement.setPointerCapture(e.pointerId)});renderer.domElement.addEventListener('pointermove',e=>{if(visionActive||lookPointer!==e.pointerId)return;const dx=e.clientX-lastX,dy=e.clientY-lastY;lastX=e.clientX;lastY=e.clientY;const lookScale=Math.min(1.25,Math.max(.72,innerWidth/420));yaw-=dx*.0042*lookScale;pitch=Math.max(-1.12,Math.min(1.12,pitch-dy*.0034*lookScale));camera.rotation.set(pitch,yaw,0,'YXZ')});renderer.domElement.addEventListener('pointerup',e=>{if(lookPointer===e.pointerId)lookPointer=null});renderer.domElement.addEventListener('pointercancel',()=>lookPointer=null);
+// Collision approximation with room bounds and door openings
+function canMove(nx,nz){const inside=(x1,x2,z1,z2)=>nx>x1&&nx<x2&&nz>z1&&nz<z2;
+if(inside(-5.8,5.8,-4.8,4.8))return true;if(inside(-13.8,-6.2,-4.8,4.8))return true;if(inside(6.2,13.8,-4.8,4.8))return true;if(inside(-3.2,3.2,-14.8,-5.2))return true;if(inside(-3.8,3.8,-22.8,-16.2))return true;if(inside(-5.2,5.2,5.2,15.2))return true;
+// Doorways only connect zones while the corresponding door is open.
+const labDoor=doorRecords.find(d=>d.label==='Дверь в лабораторию'),studyDoor=doorRecords.find(d=>d.label==='Дверь в кабинет'),wardDoor=doorRecords.find(d=>d.label==='Дверь в палату');
+if(labDoor?.open&&nx>-6.45&&nx<-5.55&&Math.abs(nz)<1.15)return true;
+if(studyDoor?.open&&nx>5.55&&nx<6.45&&Math.abs(nz)<1.15)return true;
+if(wardDoor?.open&&Math.abs(nx)<1.2&&nz>-16.45&&nz<-15.45)return true;const entryDoor=doorRecords.find(d=>d.label==='Входная дверь');if(entryDoor?.open&&Math.abs(nx)<1.05&&nz>4.45&&nz<5.55)return true;
+return false}
+const title=document.getElementById('titleScreen'),hud=document.getElementById('hud'),hint=document.getElementById('hint'),msg=document.getElementById('message'),mapLabel=document.getElementById('mapLabel');let started=false,sanity=100,timer=null;function say(t){msg.textContent=t;msg.style.opacity=1;clearTimeout(timer);timer=setTimeout(()=>msg.style.opacity=0,5000)}function beginGame(message='Вы прибыли в дом. Исследуйте помещения и осмотрите предметы.'){started=true;initAudio();if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();title.style.opacity=0;setTimeout(()=>title.style.display='none',800);hud.style.display='block';say(message)}
+const storyIntro=document.getElementById('storyIntro'),storyIntroText=document.getElementById('storyIntroText');let introTimers=[];
+function clearIntroTimers(){introTimers.forEach(clearTimeout);introTimers=[]}
+function typeIntroLine(text,done){storyIntroText.textContent='';let i=0;function tick(){if(i<text.length){storyIntroText.textContent+=text[i++];introTimers.push(setTimeout(tick,34));}else if(done)introTimers.push(setTimeout(done,1900));}tick()}
+let arrivalAnimating=false;
+function beginArrivalSequence(){
+ storyIntro.style.display='none';camera.position.set(0,1.65,11.6);yaw=0;pitch=0;camera.rotation.set(0,0,0,'YXZ');
+ const caption=document.getElementById('arrivalCaption');caption.textContent='';caption.style.display='flex';arrivalAnimating=true;started=false;
+ const start=performance.now(),duration=7600;const baseYaw=0;
+ function animateArrival(now){
+  const t=Math.min(1,(now-start)/duration);
+  let angle;
+  if(t<.34){const q=t/.34;angle=-.62*Math.sin(q*Math.PI/2)}
+  else if(t<.72){const q=(t-.34)/.38;angle=-.62+1.24*q}
+  else{const q=(t-.72)/.28;angle=.62*(1-q)}
+  yaw=baseYaw+angle;camera.rotation.set(0,yaw,0,'YXZ');
+  if(t>.43&&t<.70)caption.textContent='«Впервые вижу настолько жуткий дом…»';
+  if(t<1)requestAnimationFrame(animateArrival);
+  else{yaw=0;camera.rotation.set(0,0,0,'YXZ');caption.style.display='none';arrivalAnimating=false;beginGame('Осмотрите особняк и войдите внутрь.');}
+ }
+ requestAnimationFrame(animateArrival);
+}
+function startStoryIntro(){clearIntroTimers();initAudio();if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume();title.style.opacity='0';setTimeout(()=>{title.style.display='none';storyIntro.style.display='flex';storyIntro.style.opacity='1';typeIntroLine('Алекс Морган — известный исследователь паранормальных явлений, который с детства интересовался потусторонним миром.\\n\\nОднажды владельцы старинного особняка пригласили его расследовать странные события, происходящие в доме. Алекс соглашается приехать, даже не подозревая, что за обычным расследованием скрывается нечто гораздо более страшное.',()=>{storyIntro.style.opacity='0';introTimers.push(setTimeout(beginArrivalSequence,1500));});},850)}
+function focusDoor(){ray.setFromCamera(center,camera);const hits=ray.intersectObjects(doorRecords.map(d=>d.panel),false);if(hits.length&&hits[0].distance<3.2)return doorRecords.find(d=>d.panel===hits[0].object);return null}
+let spareCells=0;const cellCount=document.getElementById('cellCount'),useBatteryButton=document.getElementById('useBattery');function updateInventory(){cellCount.textContent=spareCells;useBatteryButton.style.display=spareCells>0&&battery<100?'block':'none';if(inventoryButton)renderInventory()}useBatteryButton.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();if(spareCells>0&&battery<100){spareCells--;battery=Math.min(100,battery+45);batteryFill.style.width=battery+'%';document.getElementById('battery').firstChild.textContent='BATTERY '+Math.ceil(battery)+'%';say('Батарея заменена. Заряд фонарика восстановлен.');updateInventory();}});
+const inventoryButton=document.getElementById('inventoryButton'),inventoryPanel=document.getElementById('inventoryPanel'),inventoryItems=document.getElementById('inventoryItems'),inventoryClose=document.getElementById('inventoryClose');
+function renderInventory(){
+ const found=clueList.filter(c=>c.found),count=found.length;
+ inventoryButton.textContent='INVENTORY · '+(count+spareCells);
+ inventoryItems.innerHTML='';
+ const batteryCard=document.createElement('article');batteryCard.className='inventoryItem';
+ batteryCard.innerHTML='<strong>Батарейки · '+spareCells+'</strong><small>Запасные элементы питания для фонарика. Используйте кнопку USE CELL.</small>';
+ const grid=document.createElement('div');grid.className='inventoryGrid';grid.appendChild(batteryCard);
+ for(const c of found){const item=document.createElement('article');item.className='inventoryItem';const title=document.createElement('strong');title.textContent=c.label;const desc=document.createElement('small');desc.textContent=c.detail||'Найденная улика';item.append(title,desc);grid.appendChild(item)}
+ if(count===0&&spareCells===0){const empty=document.createElement('div');empty.className='inventoryEmpty';empty.textContent='Инвентарь пуст. Исследуйте поместье и подбирайте предметы.';inventoryItems.appendChild(empty)}else inventoryItems.appendChild(grid);
+}
+function openInventory(){if(!started)return;renderInventory();inventoryPanel.style.display='block'}
+function closeInventory(){inventoryPanel.style.display='none'}
+inventoryButton.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();if(inventoryPanel.style.display==='block'){closeInventory();return;}if(journalPanel.style.display==='block')closeJournal();openInventory()});
+inventoryClose.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();closeInventory()});
+const journalButton=document.getElementById('journalButton'),journalPanel=document.getElementById('journalPanel'),journalEntries=document.getElementById('journalEntries'),journalClose=document.getElementById('journalClose');
+const journalText={tomas_boot:'Небольшой ботинок найден в лаборатории. Видение указывает, что Томас был ребёнком. В сюжетной версии потребуется связать эту улику с местом его захоронения.',tomas_drawing:'Детский рисунок. На обратной стороне обнаружено имя Адриана. Запись сохранена как возможная связь с доктором.',maria_strap:'Ремень от кушетки напоминает о палате и экспериментах. Видение Марии направляет расследование к её истории.',maria_letter:'Письмо домой. В нём упоминается обещание доктора; точный текст письма будет добавлен по оригинальному сценарию главы.',joseph_journal:'Дневник Йозефа найден среди вещей. Запись указывает на спрятанные сведения в подвале.',joseph_page:'Вырванная страница из записей доктора. Она может раскрыть важную деталь его прошлого.'};
+function renderJournal(){const count=clueList.filter(c=>c.found).length;journalButton.textContent='JOURNAL · '+count+'/6';journalEntries.innerHTML='';if(count===0){journalEntries.innerHTML='<div class="journalEmpty">Пока нет найденных улик. Осматривайте предметы и нажимайте INTERACT, чтобы записывать сведения.</div>';return;}for(const c of clueList){if(!c.found)continue;const item=document.createElement('article');item.className='journalEntry found';const title=document.createElement('strong');title.textContent=c.label;const p=document.createElement('p');p.textContent=journalText[c.id]||c.detail;item.append(title,p);journalEntries.appendChild(item)}const progress=document.createElement('div');progress.className='journalEmpty';progress.textContent='Улик собрано: '+count+' из 6. Записи сохраняются в журнале и в сохранении игры.';journalEntries.appendChild(progress)}
+function openJournal(){if(!started)return;renderJournal();journalPanel.style.display='block';}function closeJournal(){journalPanel.style.display='none';}journalButton.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();openJournal()});journalClose.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();closeJournal()});
+const visionOverlay=document.getElementById('visionOverlay'),visionText=document.getElementById('visionText');let visionActive=false,visionTimeout=null;const visions={tomas_boot:'A small figure stands beneath a harsh light. A child’s shoe lies abandoned. Someone calls for the doctor.',tomas_drawing:'A pencil drawing trembles in a child’s hand. A name is written on the back: ADRIAN.',maria_strap:'Metal restraints scrape against a bed frame. A woman whispers, “You promised to help me.”',maria_letter:'An unfinished letter. The words blur, but one sentence remains: “I want to go home.”',joseph_journal:'Pages turn by themselves. A frightened voice speaks of a secret hidden behind the bricks.',joseph_page:'A torn page flashes before your eyes. The doctor’s handwriting ends in a desperate confession.'};function playVision(clue,onComplete=null){playSfx('whisper');visionActive=true;visionOverlay.style.display='flex';visionText.textContent=visions[clue.id]||'A fragment of the past flashes before your eyes.';requestAnimationFrame(()=>visionOverlay.classList.add('active'));sanity=Math.max(0,sanity-3);document.getElementById('sanityNum').textContent=sanity;document.getElementById('sanityFill').style.width=sanity+'%';clearTimeout(visionTimeout);visionTimeout=setTimeout(()=>{visionOverlay.classList.remove('active');setTimeout(()=>{visionOverlay.style.display='none';visionActive=false;if(typeof onComplete==='function')onComplete()},700)},3300)}
+const doctorDialogue=document.getElementById('doctorDialogue'),doctorText=document.getElementById('doctorText'),doctorChoices=document.getElementById('doctorChoices');
+function wakeDoctor(){if(doctorAwake||doctorBurialStarted||doctorDefeated)return;doctorAwake=true;doctor.visible=true;let placed=false;for(let r=3.2;r<=5.2&&!placed;r+=1){for(let a=0;a<Math.PI*2;a+=Math.PI/4){const x=camera.position.x+Math.cos(a)*r,z=camera.position.z+Math.sin(a)*r;if(canMove(x,z)){doctor.position.set(x,0,z);placed=true;break}}}if(!placed)doctor.position.set(camera.position.x+2,0,camera.position.z+2);doctorHome.copy(doctor.position);say('ГДЕ-ТО В ДОМЕ ОТКРЫВАЕТСЯ ДВЕРЬ. ДОКТОР ПРОСНУЛСЯ.');saveGame(false)}
+function doctorKnockout(reason='Доктор настиг вас. Вы теряете сознание.'){if(doctorBusy||doctorDefeated)return;playSfx('sting');doctorBusy=true;doctor.visible=false;setSprint(false);move={x:0,y:0};const fade=document.getElementById('fade'),label=document.getElementById('doctorKnockout');label.textContent=reason;label.style.display='flex';fade.style.opacity='1';setTimeout(()=>{camera.position.set(0,1.65,3.8);yaw=0;pitch=0;camera.rotation.set(0,0,0,'YXZ');sanity=Math.max(50,sanity);document.getElementById('sanityNum').textContent=Math.ceil(sanity);document.getElementById('sanityFill').style.width=sanity+'%';doctor.position.copy(doctorHome);doctorCooldownUntil=performance.now()+20000;label.style.display='none';fade.style.opacity='0';doctorBusy=false;say('Вы очнулись в холле. В доме снова тихо…');saveGame(false)},2100)}
+function updateDoctor(dt){if(doctorBurialStarted&&!doctorDefeated&&!doctorBusy&&doctorDialogue.style.display!=='flex'){const gx=camera.position.x-doctorGrave.position.x,gz=camera.position.z-doctorGrave.position.z;if(gx*gx+gz*gz<3.5*3.5)startDoctorDuel();return;}if(!doctorAwake||doctorBurialStarted||doctorDefeated||doctorBusy||visionActive||endingActive||doctorDialogue.style.display==='flex'||ghostDialogue.style.display==='flex'||journalPanel.style.display==='block'||inventoryPanel.style.display==='block')return;if(performance.now()<doctorCooldownUntil)return;doctor.visible=true;const dx=camera.position.x-doctor.position.x,dz=camera.position.z-doctor.position.z,dist=Math.hypot(dx,dz);if(dist>0.001){const speed=1.25+Math.max(0,clueList.filter(c=>c.found).length-1)*.16;const step=Math.min(dist,speed*dt),nx=doctor.position.x+dx/dist*step,nz=doctor.position.z+dz/dist*step;if(canMove(nx,nz)){doctor.position.x=nx;doctor.position.z=nz}else{if(canMove(nx,doctor.position.z))doctor.position.x=nx;if(canMove(doctor.position.x,nz))doctor.position.z=nz}doctor.rotation.y=Math.atan2(dx,dz)}if(dist<1.15)doctorKnockout()}
+function doctorCutscene(){if(doctorBurialStarted||doctorDefeated)return;const cluesFound=clueList.filter(c=>c.found).length;if(cluesFound<6){say('Доктор ещё не может быть найден. Сначала соберите все шесть улик.');return;}doctorBurialStarted=true;doctorAwake=false;doctor.visible=false;doctorBusy=true;const fade=document.getElementById('fade'),panel=document.getElementById('doctorCutscene'),copy=document.getElementById('doctorCutsceneText');fade.style.opacity='1';setTimeout(()=>{camera.position.set(0,1.65,-.7);yaw=0;pitch=0;camera.rotation.set(0,0,0,'YXZ');doctorGrave.visible=true;panel.style.display='flex';copy.textContent='Под слоем земли проступает очертание старого захоронения. На камне — имя Адриана Моргенштерна. Доктор больше не охотится за вами. Но его голос звучит прямо из-под земли…';fade.style.opacity='0';setTimeout(()=>{panel.style.display='none';doctorBusy=false;startDoctorDuel()},4200)},900)}
+function doctorFacts(){const found=id=>clueList.some(c=>c.id===id&&c.found);return {name:found('tomas_drawing')||fullTalksDone.includes('tomas'),tomas:found('tomas_drawing')||fullTalksDone.includes('tomas'),maria:found('maria_letter')||fullTalksDone.includes('maria'),joseph:found('joseph_page')||fullTalksDone.includes('joseph')}}
+const doctorNodes={
+ start:{text:'Ты слышишь их… как слышал когда-то я. Зачем ты пришёл, детектив?',choices:[['Вы убийца.','rage'],['Доктор Адриан Моргенштерн. Я хочу поговорить.','talk','name'],['Я хочу, чтобы они ушли.','mock']]},
+ mock:{text:'Они не уйдут. Дом никого не отпускает. Попробуй ещё раз.',next:'start'},
+ talk:{text:'Ты знаешь моё имя… Тогда скажи: чем, по-твоему, я здесь занимался?',choices:[['Вы хотели победить смерть.','justify'],['Вы мучили людей ради забавы.','rage']]},
+ justify:{text:'Именно. Смерть — ошибка природы. А цена… цена всегда есть. Они были нужны науке.',choices:[['Томас звал вас по имени до конца. Он верил, что вы остановитесь.','crack1','tomas'],['Мария верила вашему обещанию, что она не умрёт.','crack1','maria'],['Вы правы, доктор.','rage'],['Науке не было до них дела.','rage']]},
+ crack1:{text:'Он… звал меня? Я не помню. Я не хотел помнить.',choices:[['Вы записали это в тетрадь, а потом вырвали страницу. Вы плакали над койкой.','crack2','joseph'],['Вспомните его лицо.','face'],['Вам просто всё равно.','rage']]},
+ face:{text:'Лицо мальчика… в глазах страх. Я смотрел и записывал. Я записывал…',next:'crack1'},
+ crack2:{text:'Я хотел победить смерть. А убил всех, кого пытался спасти… Что мне теперь делать?',choices:[['Признайте, что это было зло, и уходите.','repent'],['Тогда оставайтесь здесь навсегда.','rage']]}
+};
+let doctorNode='start';
+function startDoctorDuel(){if(!doctorBurialStarted||doctorDefeated||clueList.filter(c=>c.found).length<6||doctorDialogue.style.display==='flex')return;doctorNode='start';doctorDialogue.style.display='flex';renderDoctorNode()}
+function renderDoctorNode(){const node=doctorNodes[doctorNode];doctorText.textContent=node.text;doctorChoices.innerHTML='';if(node.next){const b=document.createElement('button');b.textContent='ПРОДОЛЖИТЬ';b.onclick=()=>{doctorNode=node.next;renderDoctorNode()};doctorChoices.appendChild(b);return;}for(const choice of node.choices||[]){const [label,next,requires]=choice;const facts=doctorFacts();const allowed=!requires||!!facts[requires];const b=document.createElement('button');b.textContent=allowed?label:'[ не хватает улик ]';b.disabled=!allowed;b.onclick=()=>chooseDoctorReply(next);doctorChoices.appendChild(b)}}
+function chooseDoctorReply(next){if(next==='rage'){doctorDialogue.style.display='none';doctorKnockout('Доктор отвергает ваши слова. Вы теряете сознание…');return;}if(next==='repent'){doctorDialogue.style.display='none';doctorDefeated=true;doctorBuried=true;doctorGrave.visible=true;doctorAwake=false;doctor.visible=false;doctorBusy=false;say('Доктор признал свою вину. Его охота окончена.');document.getElementById('stageToast').textContent='ГЛАВА I · ДОКТОР ИЗГНАН';document.getElementById('stageToast').style.display='block';saveGame(false);return;}doctorNode=next;renderDoctorNode()}
+
+// Seven location/action-based scares from the Chapter I plan.
+const scareOverlay=document.getElementById('scareOverlay'),scareText=document.getElementById('scareText');
+const scareFlags={mirror:false,cabinet:false,straps:false,typewriter:false,ward:false,corridor:false,gate:false};
+let scareUntil=0,activeScare=null;
+function scareMessage(text,duration=1500){
+ if(activeScare||doctorDialogue.style.display==='flex'||doctorBusy)return;
+ activeScare=text;scareText.textContent=text;scareOverlay.style.display='flex';requestAnimationFrame(()=>scareOverlay.classList.add('active'));
+ scareUntil=performance.now()+duration;
+}
+function finishScare(){scareOverlay.classList.remove('active');setTimeout(()=>{scareOverlay.style.display='none';activeScare=null},240)}
+// Mirror prop on the hall wall and its one-time reflected silhouette.
+const mirrorFrame=new THREE.Mesh(new THREE.BoxGeometry(.92,1.42,.12),new THREE.MeshStandardMaterial({color:0x554637,roughness:.8}));mirrorFrame.position.set(-4.55,1.62,4.82);scene.add(mirrorFrame);
+const mirrorGlass=new THREE.Mesh(new THREE.BoxGeometry(.76,1.24,.035),new THREE.MeshStandardMaterial({color:0x171c22,metalness:.55,roughness:.22,emissive:0x080b10}));mirrorGlass.position.set(-4.55,1.62,4.735);scene.add(mirrorGlass);
+const mirrorShadow=apparition.clone();mirrorShadow.position.set(-4.55,0,1.0);mirrorShadow.scale.set(.82,.95,.82);mirrorShadow.visible=false;scene.add(mirrorShadow);ghostModelTargets.push(mirrorShadow);
+// Cabinet door that swings open in the basement laboratory.
+const cabinetHinge=new THREE.Group();cabinetHinge.position.set(-13.86,.92,1.88);scene.add(cabinetHinge);
+const cabinetDoor=new THREE.Mesh(new THREE.BoxGeometry(.62,1.48,.09),new THREE.MeshStandardMaterial({color:0x332a27,roughness:1}));cabinetDoor.position.set(.31,0,0);cabinetHinge.add(cabinetDoor);
+let cabinetScareActive=false,cabinetScareTime=0;
+// Restraint straps on the laboratory couch, animated after Tomas's first vision.
+const scareStrapMat=new THREE.MeshStandardMaterial({color:0x4b2928,roughness:1,emissive:0x170707});
+const scareStraps=[];for(const x of [-10.55,-9.55]){const strap=new THREE.Mesh(new THREE.TorusGeometry(.24,.035,7,18),scareStrapMat);strap.position.set(x,1.04,-1.5);strap.rotation.x=Math.PI/2;scene.add(strap);scareStraps.push(strap)}
+let strapsScareActive=false,strapsScareTime=0;
+// Typewriter on the study desk. The page fills itself after Maria's letter is found.
+const typewriter=new THREE.Group();typewriter.position.set(10.1,1.0,-1.72);scene.add(typewriter);
+const typeBase=new THREE.Mesh(new THREE.BoxGeometry(.62,.16,.42),new THREE.MeshStandardMaterial({color:0x28272a,metalness:.45,roughness:.65}));typewriter.add(typeBase);
+const typeRoll=new THREE.Mesh(new THREE.CylinderGeometry(.055,.055,.5,8),new THREE.MeshStandardMaterial({color:0x77716b,metalness:.4}));typeRoll.rotation.z=Math.PI/2;typeRoll.position.set(0,.15,-.12);typewriter.add(typeRoll);
+let typewriterScareActive=false,typewriterScareTime=0;
+// A pale figure on the ward bed, separate from the doctor hunter.
+const wardGhost=apparition.clone();wardGhost.position.set(0,.12,-20.5);wardGhost.scale.set(.8,.72,.8);wardGhost.visible=false;scene.add(wardGhost);
+// Distant doctor silhouette for the corridor blackout event (does not control the hunter).
+const corridorDoctor=doctor.clone();corridorDoctor.position.set(0,0,-13.8);corridorDoctor.visible=false;scene.add(corridorDoctor);
+// The distant corridor doctor uses the same Adrian model as the hunter.
+loadNamedModel('doctor_adrian.glb','scare:corridorDoctor',[corridorDoctor],1.9,false);
+// Exit gate and the chapter-end apparition beyond the ward.
+const exitGate=new THREE.Group();
+for(const x of [-1.25,1.25]){const post=new THREE.Mesh(new THREE.BoxGeometry(.16,2.7,.16),new THREE.MeshStandardMaterial({color:0x393337,metalness:.35}));post.position.set(x,1.35,0);exitGate.add(post)}
+for(let y=.35;y<2.5;y+=.42){const bar=new THREE.Mesh(new THREE.BoxGeometry(2.5,.075,.08),new THREE.MeshStandardMaterial({color:0x393337,metalness:.35}));bar.position.y=y;exitGate.add(bar)}
+exitGate.position.set(0,0,14.4);exitGate.rotation.y=1.18;exitGate.visible=true;scene.add(exitGate);
+const gateGhost=apparition.clone();gateGhost.position.set(0,0,13.8);gateGhost.visible=false;scene.add(gateGhost);
+// Dedicated scare models from the package: seated ward figure and gate entity.
+loadNamedModel('ghost_hospital_seated.glb','scare:wardGhost',[wardGhost],1.35,true);
+loadNamedModel('gate_entity.glb','scare:gateEntity',[gateGhost],1.9,false);
+function triggerStrapScare(){if(scareFlags.straps)return;scareFlags.straps=true;strapsScareActive=true;strapsScareTime=performance.now();say('С кушетки доносится скрежет металла…');}
+function triggerTypewriterScare(){if(scareFlags.typewriter)return;scareFlags.typewriter=true;typewriterScareActive=true;typewriterScareTime=performance.now();scareMessage('ПЕЧАТНАЯ МАШИНКА НАЧИНАЕТ ПЕЧАТАТЬ САМА…',1300);}
+function updateScares(dt){
+ const now=performance.now();
+ if(activeScare&&now>=scareUntil)finishScare();
+ // 1. Hall mirror: one-time silhouette behind the player on first approach.
+ if(!scareFlags.mirror&&camera.position.z>-.8&&camera.position.z<2.8&&camera.position.x<-2.8){scareFlags.mirror=true;mirrorShadow.position.set(camera.position.x-.15,0,camera.position.z-1.45);mirrorShadow.scale.set(1.05,1.15,1.05);mirrorShadow.visible=true;mirrorShadow.lookAt(camera.position.x,1,camera.position.z);scareMessage('В ЗЕРКАЛЕ КТО-ТО СТОИТ У ВАС ЗА СПИНОЙ…',1450,.045);setTimeout(()=>{mirrorShadow.visible=false;mirrorShadow.scale.set(.82,.95,.82);mirrorShadow.position.set(-4.55,0,1.0)},1150)}
+ // 2. Laboratory instrument cabinet opens sharply when approached.
+ if(!scareFlags.cabinet&&camera.position.x<-11.2&&camera.position.z>-.1&&camera.position.z<3.6){scareFlags.cabinet=true;cabinetScareActive=true;cabinetScareTime=now;scareMessage('ЗА ДВЕРЦЕЙ ШКАФА ЧТО-ТО УДАРЯЕТСЯ О МЕТАЛЛ…',1350)}
+ if(cabinetScareActive){const t=(now-cabinetScareTime)/1000;cabinetHinge.rotation.y=Math.min(1.55,t*7.2);if(t>.38&&t<.62){scareMessage('НЕ СМОТРИ ВНУТРЬ…',850,.055);cabinetScareActive=false;cabinetHinge.rotation.y=1.55;}else if(t>1.4){cabinetScareActive=false;cabinetHinge.rotation.y=1.55;}}
+ // 3. The bed restraints writhe after the first Tomas vision.
+ if(strapsScareActive){const t=(now-strapsScareTime)/1000;scareStraps.forEach((o,i)=>{o.rotation.z=Math.sin(t*13+i*1.7)*.65;o.position.y=1.04+Math.abs(Math.sin(t*10+i))*0.16});if(t>2.8){strapsScareActive=false;scareStraps.forEach(o=>{o.rotation.z=0;o.position.y=1.04})}}
+ // 4. The typewriter types a short warning after Maria's letter vision.
+ if(typewriterScareActive){const t=(now-typewriterScareTime)/1000;typewriter.rotation.z=Math.sin(t*24)*.025;typeRoll.rotation.x=Math.sin(t*18)*.08;if(t>3.0){typewriterScareActive=false;typewriter.rotation.z=0;typeRoll.rotation.x=0;scareMessage('НА ЛИСТЕ ПОЯВИЛОСЬ: «ТЫ НЕ ОДИН»',1800)}}
+ // 5. Ward door slams and a figure appears on the bed after the strap clue.
+ if(!scareFlags.ward&&clueList.find(c=>c.id==='maria_strap')?.found&&camera.position.z<-17.2&&camera.position.z>-22.5&&Math.abs(camera.position.x)<2.8){scareFlags.ward=true;const wardDoor=doorRecords.find(d=>d.label==='Дверь в палату');if(wardDoor){wardDoor.open=false;wardDoor.target=0;wardDoor.hinge.rotation.y=0}wardGhost.visible=true;wardGhost.position.set(camera.position.x*.25,.12,camera.position.z-2.15);wardGhost.lookAt(camera.position.x,1.1,camera.position.z);scareMessage('ДВЕРЬ ПАЛАТЫ ЗАХЛОПЫВАЕТСЯ. НА КРОВАТИ КТО-ТО СИДИТ…',1900,.06);playSfx('door');setTimeout(()=>{wardGhost.visible=false;wardGhost.position.set(0,.12,-20.5)},2400)}
+ // 6. Hunter-awake corridor scare. This is only a visual beat; the real chase remains separate.
+ if(!scareFlags.corridor&&doctorAwake&&!doctorBurialStarted&&!doctorDefeated&&camera.position.z<-8&&camera.position.z>-14.2){scareFlags.corridor=true;corridorDoctor.visible=true;corridorDoctor.position.set(0,0,-14.2);corridorDoctor.lookAt(camera.position.x,0,camera.position.z);scareLightOffUntil=now+1250;scareMessage('В КОНЦЕ КОРИДОРА СТОИТ ДОКТОР… СВЕТ ГАСНЕТ.',1200,.05);setTimeout(()=>{corridorDoctor.visible=false},1350)}
+ // 7. The gate and Chapter II placeholder appear only after the doctor is defeated.
+ if(doctorDefeated){exitGate.visible=true;if(!scareFlags.gate&&nearExitGate()){scareFlags.gate=true;gateGhost.visible=true;scareMessage('ЗА КАЛИТКОЙ КТО-ТО ЖДЁТ. ЭТО УЖЕ НЕ ДОКТОР…',2300);playSfx('whisper')}}
+}
+
+// Chapter ambience and procedural sound effects (no external audio files required).
+let audioCtx=null, masterGain=null, ambientNodes=[], ambientStarted=false, heartbeatTimer=0;
+function initAudio(){
+ if(audioCtx)return;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
+ audioCtx=new AC();masterGain=audioCtx.createGain();masterGain.gain.value=.22;masterGain.connect(audioCtx.destination);
+ const drone1=audioCtx.createOscillator(),drone2=audioCtx.createOscillator(),droneGain=audioCtx.createGain();
+ drone1.type='sine';drone1.frequency.value=43;drone2.type='triangle';drone2.frequency.value=47;droneGain.gain.value=.12;
+ drone1.connect(droneGain);drone2.connect(droneGain);droneGain.connect(masterGain);drone1.start();drone2.start();ambientNodes=[drone1,drone2,droneGain];ambientStarted=true;
+ }
+function soundTone(freq=110,duration=.25,wave='sine',volume=.18,slide=0){
+ if(!audioCtx||!masterGain)return;const now=audioCtx.currentTime,o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=wave;o.frequency.setValueAtTime(freq,now);if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(25,freq+slide),now+duration);g.gain.setValueAtTime(volume,now);g.gain.exponentialRampToValueAtTime(.001,now+duration);o.connect(g);g.connect(masterGain);o.start(now);o.stop(now+duration+.03);
+}
+function soundNoise(duration=.35,volume=.1){
+ if(!audioCtx||!masterGain)return;const n=Math.max(1,Math.floor(audioCtx.sampleRate*duration)),buf=audioCtx.createBuffer(1,n,audioCtx.sampleRate),d=buf.getChannelData(0);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);const src=audioCtx.createBufferSource(),g=audioCtx.createGain();src.buffer=buf;g.gain.value=volume;src.connect(g);g.connect(masterGain);src.start();
+}
+function playSfx(kind){if(!audioCtx)return;switch(kind){case 'clue':soundTone(420,.12,'triangle',.11,-180);break;case 'door':soundNoise(.22,.12);soundTone(72,.3,'sine',.16,-35);break;case 'whisper':soundNoise(.7,.055);soundTone(185,.8,'sine',.06,-55);break;case 'sting':soundTone(155,.65,'sawtooth',.12,-100);soundNoise(.4,.08);break;case 'heartbeat':soundTone(58,.13,'sine',.14,-12);setTimeout(()=>soundTone(48,.16,'sine',.12,-10),180);break;case 'ending':soundTone(220,1.2,'sine',.1,90);break;}}
+const endingOverlay=document.getElementById('endingOverlay'),endingTitle=document.getElementById('endingTitle'),endingText=document.getElementById('endingText'),endingKicker=document.getElementById('endingKicker'),endingContinue=document.getElementById('endingContinue');
+let endingActive=false,chapterEndingShown=false,gateAttemptLock=false;
+function showEnding(title,text,kicker='VEIL OF THE DEAD',button='ПРОДОЛЖИТЬ',onClose=null){
+ endingActive=true;endingTitle.textContent=title;endingText.textContent=text;endingKicker.textContent=kicker;endingContinue.textContent=button;endingOverlay.style.display='flex';playSfx('ending');endingContinue.onclick=()=>{endingOverlay.style.display='none';endingActive=false;if(onClose)onClose();saveGame(false)};
+}
+function attemptGate(){
+ if(endingActive||gateAttemptLock)return true;
+ const cluesFound=clueList.filter(c=>c.found).length;
+ if(doctorDefeated){
+  if(!chapterEndingShown){chapterEndingShown=true;gateGhost.visible=true;showEnding('ГЛАВА I ЗАВЕРШЕНА','Доктор больше не охотится. Но за калиткой виднеется неподвижная фигура. Она ждала, пока вы закончите это расследование.\n\nПРОДОЛЖЕНИЕ СЛЕДУЕТ…','CHAPTER I · THE DOCTOR','ВЕРНУТЬСЯ В ДОМ',()=>{saveGame(false);});}
+  else {gateGhost.visible=true;scareMessage('ЗА КАЛИТКОЙ СТОИТ КТО-ТО НОВЫЙ…',2100);playSfx('whisper');}
+  return true;
+ }
+ if(cluesFound===0){
+  showEnding('СЕКРЕТНАЯ КОНЦОВКА','Алекс: «Нет… Это слишком жутко и опасно. Даже для меня. Я должен убираться отсюда».\n\nВы не стали заходить дальше. Из холла вы набираете номер владельцев и сообщаете, что в доме кто-то есть. На другом конце долго молчат, а затем отвечают: «Мы предупреждали вас не возвращаться».','ENDING · THE CALL','ЗАВЕРШИТЬ',()=>{started=false;hud.style.display='none';title.style.display='flex';title.style.opacity=1;});
+  return true;
+ }
+ gateAttemptLock=true;gateGhost.visible=false;playSfx('sting');const fade=document.getElementById('fade');const knock=document.getElementById('doctorKnockout');knock.textContent='ДОМ НЕ ХОЧЕТ ВАС ОТПУСКАТЬ…';knock.style.display='flex';fade.style.opacity='1';move={x:0,y:0};setSprint(false);
+ setTimeout(()=>{camera.position.set(0,1.65,3.8);yaw=0;pitch=0;camera.rotation.set(0,0,0,'YXZ');sanity=Math.max(35,sanity-8);document.getElementById('sanityNum').textContent=Math.ceil(sanity);document.getElementById('sanityFill').style.width=sanity+'%';knock.style.display='none';fade.style.opacity='0';say('Вы очнулись в холле. Калитка снова кажется недосягаемой.');gateAttemptLock=false;saveGame(false)},2300);
+ return true;
+}
+// Low-sanity apparitions are visual misperceptions, not additional enemies.
+const hallucinationGroup=new THREE.Group();scene.add(hallucinationGroup);
+const hallucinationMat=new THREE.MeshBasicMaterial({color:0xb9c2c8,transparent:true,opacity:.18,depthWrite:false});
+const hallucinationBody=new THREE.Mesh(new THREE.CapsuleGeometry(.28,.95,3,6),hallucinationMat);hallucinationBody.position.y=1.05;hallucinationGroup.add(hallucinationBody);
+const hallucinationHead=new THREE.Mesh(new THREE.SphereGeometry(.24,8,6),hallucinationMat);hallucinationHead.position.y=1.78;hallucinationGroup.add(hallucinationHead);
+hallucinationGroup.visible=false;let hallucinationUntil=0,nextHallucinationAt=performance.now()+18000,hallucinationOrigin=new THREE.Vector3();
+function spawnHallucination(){
+ const spots=[[-10,0], [10,0], [0,-12], [0,-20], [-3,-3],[3,-3]];const spot=spots[Math.floor(Math.random()*spots.length)];
+ hallucinationGroup.position.set(spot[0],0,spot[1]);hallucinationGroup.lookAt(camera.position.x,0,camera.position.z);hallucinationGroup.visible=true;hallucinationUntil=performance.now()+2100;hallucinationOrigin.copy(hallucinationGroup.position);playSfx('whisper');
+}
+function updateSanityEffects(dt){
+ const now=performance.now();if(sanity<=28&&now>nextHallucinationAt&&!hallucinationGroup.visible&&!visionActive&&!endingActive&&doctorDialogue.style.display!=='flex'&&ghostDialogue.style.display!=='flex'){
+  spawnHallucination();nextHallucinationAt=now+19000+Math.random()*13000;
+ }
+ if(hallucinationGroup.visible){const left=Math.max(0,hallucinationUntil-now);hallucinationMat.opacity=.05+.2*Math.sin((now%700)/700*Math.PI);hallucinationGroup.position.y=.04*Math.sin(now*.008);if(left<=0){hallucinationGroup.visible=false;hallucinationMat.opacity=.18;}}
+ if(sanity<=45){heartbeatTimer+=dt;if(heartbeatTimer>5.8){heartbeatTimer=0;playSfx('heartbeat')}}else heartbeatTimer=0;
+}
+// Keep the exit gate visible throughout Chapter I and show a contextual hint nearby.
+function nearExitGate(){return Math.hypot(camera.position.x,camera.position.z-14.4)<1.55;}
+
+function interact(){
+ if(!started||journalPanel.style.display==='block'||inventoryPanel.style.display==='block'||ghostDialogue.style.display==='flex'||letterOverlay.style.display==='flex'||document.getElementById('saveSlotsPanel').style.display==='block'||endingActive)return;
+ if(nearExitGate()){attemptGate();return;}
+ if(focusOwnersNote()){ownersNoteRead=true;ownersNote.visible=false;letterOverlay.style.display='flex';return;}
+ const picked=focusBattery();
+ if(picked){picked.found=true;picked.group.visible=false;spareCells++;updateInventory();say('Подобрана батарейка. Запас: '+spareCells);return;}
+ const hitDoor=focusDoor();
+ if(hitDoor){playSfx('door');hitDoor.open=!hitDoor.open;hitDoor.target=hitDoor.open?Math.PI/2:0;say(`${hitDoor.open?'Дверь открывается':'Дверь закрывается'}: ${hitDoor.label}`);return;}
+ const ghost=focusGhost();
+ if(ghost){openVictimDialogue(ghost,activeGhostStage);return;}
+ const burial=focusBurial();
+ if(burial){burial.done=true;burial.group.visible=false;completedBurials.push(burial.id);say(burial.label+'\\n'+burial.detail);updateChapterStage();saveGame(false);return;}
+ focused=focusClue();
+ if(focused){
+  playSfx('clue');focused.found=true;focused.mesh.visible=false;
+  const victim=focused.id.split('_')[0];
+  const isFirst=firstClueByVictim[victim]===focused.id;
+  const n=clueList.filter(c=>c.found).length;
+  renderJournal();renderInventory();
+  sanity=Math.max(0,sanity-7);document.getElementById('sanityNum').textContent=sanity;document.getElementById('sanityFill').style.width=sanity+'%';
+  playVision(focused,()=>{if(n===1)wakeDoctor();if(n===6)doctorCutscene();if(focused.id==='tomas_boot')triggerStrapScare();if(focused.id==='maria_letter')triggerTypewriterScare();});
+  say(`УЛИКИ ${n}/6 · ${focused.label}\\n${focused.detail}`);
+  if(isFirst){
+   updateChapterStage();
+   say('Улика указывает на захоронение '+victimNames[victim]+'. Отправляйтесь туда — призрак ждёт только возле могилы.');
+  }else{
+   say('Вторая улика найдена. Вернитесь к захоронению '+victimNames[victim]+', чтобы услышать всю историю.');
+  }
+  saveGame(false);
+ }else say('Ничего для осмотра рядом. Подойдите к предмету и наведите центр экрана.');
+}
+document.getElementById('interact').addEventListener('pointerdown',e=>{e.preventDefault();interact()});function areaName(){const x=camera.position.x,z=camera.position.z;if(z>5)return 'FRONT YARD · ДВОР';if(z<-16)return 'UPPER WARD · ПАЛАТА';if(z<-5)return 'CORRIDOR · КОРИДОР';if(x<-6)return 'BASEMENT · ЛАБОРАТОРИЯ';if(x>6)return 'STUDY · КАБИНЕТ';return 'ENTRY HALL · ХОЛЛ'}
+
+// Six independent local save slots. The previous single save is migrated into slot 1.
+const SAVE_KEY='veil_of_the_dead_ch1_save_v1';const BACKUP_KEY='veil_of_the_dead_ch1_backup_v1';const SLOTS_KEY='veil_of_the_dead_ch1_slots_v1';const SLOT_COUNT=6;let currentSaveSlot=0,pendingNewIntro=false;try{const pending=localStorage.getItem('veil_of_the_dead_pending_slot');if(pending!==null){currentSaveSlot=Math.max(0,Math.min(5,Number(pending)||0));localStorage.removeItem('veil_of_the_dead_pending_slot')}pendingNewIntro=localStorage.getItem('veil_of_the_dead_start_intro')==='1';localStorage.removeItem('veil_of_the_dead_start_intro')}catch(e){}let lastAutoSave=0;const saveStatus=document.getElementById('saveStatus');
+function readSlots(){try{const parsed=JSON.parse(localStorage.getItem(SLOTS_KEY)||'null');if(Array.isArray(parsed))return Array.from({length:SLOT_COUNT},(_,i)=>parsed[i]||null)}catch(e){}return Array(SLOT_COUNT).fill(null)}
+function writeSlots(slots){localStorage.setItem(SLOTS_KEY,JSON.stringify(Array.from({length:SLOT_COUNT},(_,i)=>slots[i]||null)))}
+function migrateLegacySave(){const slots=readSlots();if(!slots.some(Boolean)){try{const old=localStorage.getItem(SAVE_KEY);if(old){slots[0]=JSON.parse(old);writeSlots(slots)}}catch(e){}}return slots}
+function collectSaveData(){return {version:3,position:{x:camera.position.x,y:camera.position.y,z:camera.position.z},yaw,pitch,sanity,battery,stamina,spareCells,flashlightOn,foundClues:clueList.filter(c=>c.found).map(c=>c.id),partialTalksDone,fullTalksDone,foundPickups:pickupRecords.map(p=>p.found),doors:doorRecords.map(d=>({open:d.open,target:d.target})),hauntingTriggered,completedBurials,doctorRevealed,doctorAwake,doctorBurialStarted,doctorBuried,doctorDefeated,scareFlags,chapterEndingShown,ownersNoteRead,updatedAt:Date.now()}}
+function saveGame(showMessage=false){try{const slots=readSlots();const index=Math.max(0,Math.min(SLOT_COUNT-1,currentSaveSlot));slots[index]=collectSaveData();writeSlots(slots);currentSaveSlot=index;saveStatus.textContent='СЛОТ '+(index+1)+' СОХРАНЁН';if(showMessage)say('Прогресс сохранён в слоте '+(index+1)+'.');refreshMenuButtons();return true}catch(e){saveStatus.textContent='SAVE ERROR';if(showMessage)say('Не удалось сохранить прогресс в браузере.');return false}}
+function readSave(){const slots=migrateLegacySave();return slots[currentSaveSlot]||null}
+function readBackup(){try{const raw=localStorage.getItem(BACKUP_KEY);return raw?JSON.parse(raw):null}catch(e){return null}}
+function saveBackup(showMessage=true){try{localStorage.setItem(BACKUP_KEY,JSON.stringify(collectSaveData()));if(showMessage)say('РЕЗЕРВНАЯ КОПИЯ СОЗДАНА.');refreshMenuButtons();return true}catch(e){if(showMessage)say('Не удалось создать резервную копию.');return false}}
+function renderSaveSlots(){const list=document.getElementById('saveSlotsList');if(!list)return;const slots=migrateLegacySave();list.innerHTML='';slots.forEach((data,index)=>{const card=document.createElement('article');card.className='saveSlot';const title=document.createElement('strong');title.textContent='СЛОТ '+(index+1)+(currentSaveSlot===index?' · ВЫБРАН':'');const info=document.createElement('small');info.textContent=data?'Сохранение найдено · '+(data.foundClues?.length||0)+'/6 улик · '+(data.updatedAt?new Date(data.updatedAt).toLocaleString():'дата неизвестна'):'Пустой слот';card.append(title,info);const actions=document.createElement('div');actions.className='saveSlotActions';const main=document.createElement('button');main.textContent=data?'ЗАГРУЗИТЬ':'НОВАЯ ИГРА';main.onclick=()=>{currentSaveSlot=index;document.getElementById('saveSlotsPanel').style.display='none';if(data){if(applySave(data))beginGame('Загружен слот '+(index+1)+'.');else say('Сохранение повреждено.')}else if(started){if(confirm('Начать новую игру в слоте '+(index+1)+'?')){const latest=readSlots();latest[index]=null;writeSlots(latest);localStorage.setItem('veil_of_the_dead_pending_slot',String(index));location.reload()}}else startStoryIntro()};actions.appendChild(main);if(data){const restart=document.createElement('button');restart.textContent='НОВАЯ ИГРА В СЛОТЕ';restart.onclick=()=>{if(confirm('Начать новое прохождение в слоте '+(index+1)+'? Старое сохранение будет заменено.')){const latest=readSlots();latest[index]=null;writeSlots(latest);localStorage.setItem('veil_of_the_dead_pending_slot',String(index));localStorage.setItem('veil_of_the_dead_start_intro','1');location.reload()}};actions.appendChild(restart)}const save=document.createElement('button');save.textContent='СОХРАНИТЬ СЮДА';save.disabled=!started;save.onclick=()=>{currentSaveSlot=index;saveGame(true);renderSaveSlots()};actions.appendChild(save);const del=document.createElement('button');del.textContent='УДАЛИТЬ';del.disabled=!data;del.onclick=()=>{if(confirm('Удалить сохранение из слота '+(index+1)+'?')){const latest=readSlots();latest[index]=null;writeSlots(latest);if(currentSaveSlot===index)currentSaveSlot=0;renderSaveSlots();refreshMenuButtons()}};actions.appendChild(del);card.appendChild(actions);list.appendChild(card)})}
+function openSaveSlots(){renderSaveSlots();document.getElementById('saveSlotsPanel').style.display='block'}
+document.getElementById('mySaves').addEventListener('click',openSaveSlots);
+document.getElementById('saveSlotsGame').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();openSaveSlots()});
+document.getElementById('saveSlotsClose').addEventListener('click',()=>document.getElementById('saveSlotsPanel').style.display='none');
+function applySave(data){if(!data||![1,2,3].includes(data.version))return false;camera.position.set(Number.isFinite(Number(data.position?.x))?Number(data.position.x):0,Number.isFinite(Number(data.position?.y))?Number(data.position.y):1.65,Number.isFinite(Number(data.position?.z))?Number(data.position.z):3.8);yaw=Number(data.yaw)||0;pitch=Number(data.pitch)||0;camera.rotation.order='YXZ';camera.rotation.set(pitch,yaw,0);sanity=Math.max(0,Math.min(100,Number.isFinite(Number(data.sanity))?Number(data.sanity):100));battery=Math.max(0,Math.min(100,Number(data.battery)||0));spareCells=Math.max(0,Number(data.spareCells)||0);stamina=Math.max(0,Math.min(100,Number(data.stamina??100)));staminaFill.style.width=stamina+'%';flashlightOn=!!data.flashlightOn&&battery>0;flashlight.intensity=flashlightOn?12:0;flashlightButton.textContent=flashlightOn?'LIGHT ON':'LIGHT';partialTalksDone.splice(0,partialTalksDone.length,...(Array.isArray(data.partialTalksDone)?data.partialTalksDone:[]));fullTalksDone.splice(0,fullTalksDone.length,...(Array.isArray(data.fullTalksDone)?data.fullTalksDone:[]));for(const c of clueList){c.found=Array.isArray(data.foundClues)&&data.foundClues.includes(c.id);c.mesh.visible=!c.found}refreshClueUnlocks();for(let i=0;i<pickupRecords.length;i++){const found=!!data.foundPickups?.[i];pickupRecords[i].found=found;pickupRecords[i].group.visible=!found}for(let i=0;i<doorRecords.length;i++){const state=data.doors?.[i];if(state){doorRecords[i].open=!!state.open;doorRecords[i].target=state.open?Math.PI/2:0;doorRecords[i].hinge.rotation.y=doorRecords[i].target}}hauntingTriggered=!!data.hauntingTriggered;completedBurials=Array.isArray(data.completedBurials)?data.completedBurials:[];doctorRevealed=!!data.doctorRevealed;doctorAwake=!!data.doctorAwake||clueList.some(c=>c.found);doctorBurialStarted=!!data.doctorBurialStarted;doctorBuried=!!data.doctorBuried;doctorDefeated=!!data.doctorDefeated;chapterEndingShown=!!data.chapterEndingShown;ownersNoteRead=!!data.ownersNoteRead;ownersNote.visible=!ownersNoteRead;refreshClueUnlocks();if(data.scareFlags)Object.assign(scareFlags,data.scareFlags);exitGate.visible=true;gateGhost.visible=doctorDefeated&&!!data.scareFlags?.gate;doctor.visible=doctorAwake&&!doctorBurialStarted&&!doctorDefeated;doctorGrave.visible=(doctorBurialStarted||doctorBuried)&&clueList.filter(c=>c.found).length===6;if(doctorAwake&&!doctorBurialStarted&&!doctorDefeated){doctor.position.set(camera.position.x+3,0,camera.position.z+3);doctorHome.copy(doctor.position)}for(const b of burialRecords){b.done=completedBurials.includes(b.id);b.group.visible=!b.done}updateChapterStage();if(hauntingTriggered)apparition.visible=false;activeGhostVictim=null;activeGhostStage=null;apparition.visible=false;document.getElementById('sanityNum').textContent=Math.ceil(sanity);document.getElementById('sanityFill').style.width=sanity+'%';batteryFill.style.width=battery+'%';document.getElementById('battery').firstChild.textContent='BATTERY '+Math.ceil(battery)+'%';updateInventory();renderJournal();renderInventory();return true}
+function refreshMenuButtons(){const slots=migrateLegacySave(),count=slots.filter(Boolean).length,hasBackup=!!readBackup();document.getElementById('mySaves').textContent='МОИ СОХРАНЕНИЯ · '+count+'/6';document.getElementById('continueGame').style.display=count?'block':'none';document.getElementById('newGame').style.display=count?'block':'none';document.getElementById('loadBackup').style.display=hasBackup?'block':'none';document.getElementById('menuSaveInfo').textContent=count+' ИЗ 6 СЛОТОВ ЗАНЯТО'+(hasBackup?' · ЕСТЬ РЕЗЕРВНАЯ КОПИЯ':'');}
+refreshMenuButtons();
+document.getElementById('start').onclick=()=>{const slots=migrateLegacySave();const empty=slots.findIndex(v=>!v);if(empty<0){openSaveSlots();say('Все шесть слотов заняты. Выберите слот, который хотите заменить.');return;}currentSaveSlot=empty;startStoryIntro()};
+document.getElementById('continueGame').onclick=()=>{const slots=migrateLegacySave();let best=-1,bestTime=-1;slots.forEach((v,i)=>{if(v&&(v.updatedAt||0)>bestTime){best=i;bestTime=v.updatedAt||0}});if(best>=0){currentSaveSlot=best;if(applySave(slots[best]))beginGame('Загружено последнее сохранение.');else say('Сохранение не удалось загрузить.')}};
+document.getElementById('newGame').onclick=()=>{if(confirm('Начать новое прохождение в первом слоте? Существующее сохранение в нём будет заменено.')){currentSaveSlot=0;const slots=readSlots();slots[0]=null;writeSlots(slots);location.reload()}};
+document.getElementById('loadBackup').onclick=()=>{const backup=readBackup();if(backup&&applySave(backup)){saveGame(false);beginGame('Загружена резервная копия.');}else say('Резервная копия не найдена или повреждена.')};
+document.getElementById('exitGame').onclick=()=>{saveGame(false);try{window.close()}catch(e){}setTimeout(()=>{document.getElementById('menuSaveInfo').textContent='БРАУЗЕР НЕ РАЗРЕШИЛ ЗАКРЫТЬ ВКЛАДКУ. МОЖНО ВЕРНУТЬСЯ НАЗАД ИЛИ ЗАКРЫТЬ ЕЁ ВРУЧНУЮ.'},150)};
+document.getElementById('saveNow').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();if(started)saveGame(true)});
+document.getElementById('backupNow').addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();if(started)saveBackup(true)});
+addEventListener('pagehide',()=>{if(started)saveGame(false)});document.addEventListener('visibilitychange',()=>{if(document.hidden&&started)saveGame(false)});
+function nowScareShake(){const t=performance.now();if(t<scareShakeUntil){camera.rotation.set(pitch+(Math.random()-.5)*scareShakePower,yaw+(Math.random()-.5)*scareShakePower,0,'YXZ');return true;}camera.rotation.set(pitch,yaw,0,'YXZ');return false}
+const clock=new THREE.Clock();const keysDown=new Set();addEventListener('keydown',e=>{keysDown.add(e.key.toLowerCase());if(e.key==='Shift')setSprint(true);if(e.key.toLowerCase()==='e'&&started)interact();if(e.key.toLowerCase()==='f'&&started)toggleFlashlight();if(e.key==='Escape'&&journalPanel.style.display==='block')closeJournal();if(e.key==='Escape'&&inventoryPanel.style.display==='block')closeInventory()});addEventListener('keyup',e=>{keysDown.delete(e.key.toLowerCase());if(e.key==='Shift')setSprint(false)});addEventListener('blur',()=>{keysDown.clear();setSprint(false)});function frame(){requestAnimationFrame(frame);const dt=Math.min(clock.getDelta(),.05);if(started){updateGhostAtBurial();if(performance.now()-lastAutoSave>2500){saveGame(false);lastAutoSave=performance.now()}for(const p of pickupRecords){if(!p.found){p.group.rotation.y+=dt*.8;p.group.position.y=.22+.04*Math.sin(performance.now()*.002+p.group.position.x);}}if(!hauntingTriggered&&camera.position.z<-7&&camera.position.z>-14){hauntingTriggered=true;apparition.visible=true;hauntingTime=performance.now();say('В коридоре кто-то стоит… Не двигайтесь.');sanity=Math.max(0,sanity-5);document.getElementById('sanityNum').textContent=sanity;document.getElementById('sanityFill').style.width=sanity+'%'}if(hauntingTriggered&&apparition.visible&&!activeGhostVictim){const elapsed=(performance.now()-hauntingTime)/1000;apparition.position.y=.08*Math.sin(elapsed*2.2);apparition.rotation.y=.35*Math.sin(elapsed*1.4);apparitionMat.opacity=Math.max(.05,.22-.015*elapsed);if(elapsed>5){apparition.visible=false;say('Фигура исчезла. Вы слышите тихий шёпот: «Помоги мне…»')}}const keyX=(keysDown.has('d')||keysDown.has('arrowright')?1:0)-(keysDown.has('a')||keysDown.has('arrowleft')?1:0),keyY=(keysDown.has('w')||keysDown.has('arrowup')?1:0)-(keysDown.has('s')||keysDown.has('arrowdown')?1:0);const inputX=move.x!==0?move.x:keyX,inputY=move.y!==0?-move.y:keyY;const fwd=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw)),side=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw)),dir=fwd.multiply(inputY).add(side.multiply(inputX));const wantsSprint=sprintHeld&&(inputX!==0||inputY!==0);if(wantsSprint&&stamina>0){stamina=Math.max(0,stamina-dt*27);if(stamina===0)setSprint(false)}else stamina=Math.min(100,stamina+dt*17);staminaFill.style.width=stamina+'%';const moveSpeed=wantsSprint&&stamina>0?3.75:2.25;if(!visionActive&&!endingActive&&journalPanel.style.display!=='block'&&inventoryPanel.style.display!=='block'&&dir.lengthSq()>0){dir.normalize().multiplyScalar(moveSpeed*dt);const nx=camera.position.x+dir.x,nz=camera.position.z+dir.z;if(canMove(nx,nz)){camera.position.x=nx;camera.position.z=nz}else{if(canMove(nx,camera.position.z))camera.position.x=nx;if(canMove(camera.position.x,nz))camera.position.z=nz}}updateScares(dt);updateDoctor(dt);updateSanityEffects(dt);playerLamp.position.set(camera.position.x,camera.position.y+1,camera.position.z-.2);const scareDark=performance.now()<scareLightOffUntil;playerLamp.intensity=scareDark?0:1.05+.07*Math.sin(performance.now()*.004);if(flashlightOn){flashlight.intensity=scareDark?0:9;battery=Math.max(0,battery-dt*1.1);batteryFill.style.width=battery+'%';document.getElementById('battery').firstChild.textContent='BATTERY '+Math.ceil(battery)+'%';if(battery<=0){flashlightOn=false;flashlight.intensity=0;flashlightButton.textContent='LIGHT';say('Фонарик разрядился.');}}focused=focusClue();const batteryFocus=focusBattery();const doorFocus=focusDoor();const burialFocus=focusBurial();const gateFocus=nearExitGate();const noteFocus=focusOwnersNote();hint.style.opacity=(focused||doorFocus||batteryFocus||burialFocus||gateFocus||noteFocus)?1:0;if(gateFocus)hint.textContent='НАЖМИ INTERACT · КАЛИТКА';else if(noteFocus)hint.textContent='НАЖМИ INTERACT · ПРОЧИТАТЬ ЗАПИСКУ';else if(burialFocus)hint.textContent='НАЖМИ INTERACT · '+burialFocus.label.toUpperCase();else if(batteryFocus)hint.textContent='НАЖМИ INTERACT · ПОДОБРАТЬ БАТАРЕЙКУ';else if(doorFocus)hint.textContent='НАЖМИ INTERACT · '+doorFocus.label.toUpperCase();else if(focused)hint.textContent='НАЖМИ INTERACT · '+focused.label.toUpperCase();for(const d of doorRecords){const desired=d.target;d.hinge.rotation.y+=(desired-d.hinge.rotation.y)*Math.min(1,dt*5);}mapLabel.textContent='THE MANOR · '+areaName();nowScareShake()}renderer.render(scene,camera)}frame();if(pendingNewIntro)startStoryIntro();addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+</script></body></html>
